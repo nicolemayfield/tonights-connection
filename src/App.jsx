@@ -1532,20 +1532,20 @@ export default function App() {
       // When a user arrives via magic link, Supabase fires SIGNED_IN.
       // Detect the "magiclink" token type in the URL and show the password
       // setup screen instead of going straight into the app.
-     if (event === "SIGNED_IN" && session) {
-  const hashParams = new URLSearchParams(window.location.hash.replace("#", "?"));
-  const queryParams = new URLSearchParams(window.location.search);
-  const tokenType = hashParams.get("type") || queryParams.get("type");
+    
+    if (event === "SIGNED_IN" && session) {
+     const hashParams = new URLSearchParams(window.location.hash.replace("#", "?"));
+     const queryParams = new URLSearchParams(window.location.search);
+     const tokenType = hashParams.get("type") || queryParams.get("type");
 
   if (tokenType === "magiclink") {
     setNeedsPasswordSetup(true);
     window.history.replaceState(null, "", window.location.pathname);
   }
 }
-}
 
-return () => subscription.unsubscribe();
-    });
+  return () => subscription.unsubscribe();
+});
   
   // Load used questions from Supabase
   useEffect(() => {
