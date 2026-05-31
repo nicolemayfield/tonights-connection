@@ -4,12 +4,13 @@
 //
 // This function runs on Vercel every time someone places an order on Shopify.
 // It checks if the order contains "Tonight's Connection", then creates a
-// Supabase account and sends the customer a magic login link.
+// Supabase account and sends the customer a magic login link email.
 //
 // ENVIRONMENT VARIABLES NEEDED IN VERCEL:
 //   SUPABASE_URL              → your Supabase project URL
 //   SUPABASE_SERVICE_ROLE_KEY → from Supabase → Settings → API → service_role key
 //   SHOPIFY_WEBHOOK_SECRET    → from Shopify → Settings → Notifications → Webhooks
+//   APP_URL                   → your Vercel app URL (e.g. https://your-app.vercel.app)
 //
 // Note: Use SUPABASE_SERVICE_ROLE_KEY (not the anon key) — this function runs
 // on the server and needs admin access to create user accounts.
@@ -94,28 +95,18 @@ export default async function handler(req, res) {
   console.log(`Processing Tonight's Connection purchase for: ${email}`);
 
   // ── Check if this user already has an account
-  const { data: existingUsers } = await supabase
-    .from("auth.users")
-    .select("email")
-    .eq("email", email)
-    .limit(1);
-
-  // Use the admin API to look up by email
   const { data: { users: userList }, error: lookupError } =
     await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
   const alreadyExists = !lookupError &&
     userList?.some((u) => u.email?.toLowerCase() === email.toLowerCase());
 
-  if (alreadyExists) {
-    console.log(`Account already exists for ${email} — sending login link anyway`);
-  }
-
-  // ── Create account if it doesn't exist, then send magic link
+  // ── Create account if it doesn't exist
+  // We pre-confirm the email since they already verified it via Shopify checkout.
   if (!alreadyExists) {
     const { error: createError } = await supabase.auth.admin.createUser({
       email,
-      email_confirm: true, // Mark email as already confirmed (they bought from Shopify)
+      email_confirm: true,
     });
 
     if (createError) {
@@ -123,29 +114,37 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to create account" });
     }
     console.log(`Created account for ${email}`);
+  } else {
+    console.log(`Account already exists for ${email} — sending login link anyway`);
   }
 
-  // ── Send magic login link
-  // This generates a secure one-time link and emails it via Supabase
-  const { error: linkError } = await supabase.auth.admin.generateLink({
-    type: "magiclink",
+  // ── Send magic link email via signInWithOtp
+  //
+  // KEY FIX: generateLink() only returns a URL — it does NOT send any email.
+  // signInWithOtp() is the correct method: it triggers Supabase to actually
+  // send the magic link email to the customer directly.
+  //
+  // shouldCreateUser: false — account is already created above, this prevents
+  // a duplicate creation attempt and ensures the email is sent to existing users.
+  const { error: otpError } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      redirectTo: process.env.APP_URL || "https://your-app.vercel.app",
+      shouldCreateUser: false,
+      emailRedirectTo: process.env.APP_URL || "https://your-app.vercel.app",
     },
   });
 
-  if (linkError) {
-    console.error(`Failed to send magic link to ${email}:`, linkError.message);
+  if (otpError) {
+    console.error(`Failed to send magic link email to ${email}:`, otpError.message);
     return res.status(500).json({ error: "Failed to send login email" });
   }
 
-  console.log(`Magic login link sent to ${email} ✓`);
+  console.log(`Magic login link email sent to ${email} ✓`);
 
   // ── Return 200 so Shopify knows we handled it
   return res.status(200).json({
     success: true,
-    message: `Account created and login link sent to ${email}`,
+    message: `Account created and login link email sent to ${email}`,
   });
 }
 
@@ -159,3 +158,4 @@ function getRawBody(req) {
     req.on("error", reject);
   });
 }
+
