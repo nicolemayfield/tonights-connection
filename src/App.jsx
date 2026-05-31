@@ -1514,7 +1514,15 @@ export default function App() {
   const [usedToast, setUsedToast] = useState(false);
 
   // Listen for auth state
-  useEffect(() => {
+  useEffect(() => {  
+  const hashParams = new URLSearchParams(window.location.hash.replace("#", "?"));
+  const queryParams = new URLSearchParams(window.location.search);
+  const tokenType = hashParams.get("type") || queryParams.get("type");
+
+  if (tokenType === "magiclink") {
+    setNeedsPasswordSetup(true);
+    window.history.replaceState(null, "", window.location.pathname);
+  }
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setAuthLoading(false);
@@ -1524,19 +1532,21 @@ export default function App() {
       // When a user arrives via magic link, Supabase fires SIGNED_IN.
       // Detect the "magiclink" token type in the URL and show the password
       // setup screen instead of going straight into the app.
-      if (event === "SIGNED_IN" && session) {
-        const params = new URLSearchParams(window.location.hash.replace("#", "?"));
-        const tokenType = params.get("type");
-        if (tokenType === "magiclink") {
-          setNeedsPasswordSetup(true);
-          // Clean the token from the URL so a refresh doesn't re-trigger this
-          window.history.replaceState(null, "", window.location.pathname);
-        }
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+     if (event === "SIGNED_IN" && session) {
+  const hashParams = new URLSearchParams(window.location.hash.replace("#", "?"));
+  const queryParams = new URLSearchParams(window.location.search);
+  const tokenType = hashParams.get("type") || queryParams.get("type");
 
+  if (tokenType === "magiclink") {
+    setNeedsPasswordSetup(true);
+    window.history.replaceState(null, "", window.location.pathname);
+  }
+}
+}
+
+return () => subscription.unsubscribe();
+    });
+  
   // Load used questions from Supabase
   useEffect(() => {
     if (!session) { setUsedMap({}); return; }
