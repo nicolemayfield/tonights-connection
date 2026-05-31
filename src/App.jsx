@@ -1246,7 +1246,7 @@ function AuthScreen() {
 
   const inputStyle = {
     width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: "12px", color: "#fff", fontSize: "15px", fontFamily: "'DM Sans', sans-serif",
+    borderRadius: "12px", color: "#2c1a0e", fontSize: "15px", fontFamily: "'DM Sans', sans-serif",
     padding: "14px 16px", outline: "none", boxSizing: "border-box", marginBottom: "12px", transition: "border-color 0.2s ease",
   };
 
