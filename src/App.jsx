@@ -1246,7 +1246,7 @@ function AuthScreen() {
 
   const inputStyle = {
     width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: "12px", color: "#5a4a32", fontSize: "15px", fontFamily: "'DM Sans', sans-serif",
+    borderRadius: "12px", color: "#fff", fontSize: "15px", fontFamily: "'DM Sans', sans-serif",
     padding: "14px 16px", outline: "none", boxSizing: "border-box", marginBottom: "12px", transition: "border-color 0.2s ease",
   };
 
@@ -1292,7 +1292,7 @@ function AuthScreen() {
 
       <div style={{ width: "100%", maxWidth: "400px", background: "#fff", border: "1px solid rgba(139,90,43,0.18)", borderRadius: "24px", padding: "40px 32px", animation: "fadeIn 0.5s ease" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-    
+          <div style={{ fontSize: "40px", marginBottom: "12px" }}>❤️</div>
           <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', Georgia, serif", fontSize: "26px", fontWeight: "900", background: "linear-gradient(135deg, #f5e6c8 0%, #d4a84e 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             Tonight's Connection
           </h1>
@@ -1404,10 +1404,109 @@ function CategoryView({ category, usedMap, onUse, onBack }) {
   );
 }
 
+// ─── PASSWORD SETUP SCREEN ────────────────────────────────────────────────────
+// Shown to first-time buyers after they click the magic link email.
+// Supabase has already authenticated them via the token in the URL —
+// we just need them to set a permanent password before entering the app.
+function PasswordSetup({ onComplete }) {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const inputStyle = {
+    width: "100%", background: "#faf6f0", border: "1px solid rgba(139,90,43,0.2)",
+    borderRadius: "12px", color: "#2c1a0e", fontSize: "15px",
+    fontFamily: "'DM Sans', sans-serif", padding: "14px 16px", outline: "none",
+    boxSizing: "border-box", marginBottom: "12px", transition: "border-color 0.2s ease",
+  };
+
+  const handleSubmit = async () => {
+    setError("");
+    if (!password || !confirmPassword) { setError("Please fill in both fields."); return; }
+    if (password !== confirmPassword) { setError("Passwords don't match."); return; }
+    if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
+
+    setLoading(true);
+    // updateUser sets the permanent password for the already-authenticated session
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+
+    if (updateError) {
+      setError(updateError.message || "Something went wrong. Please try again.");
+      return;
+    }
+    // Password saved — hand control back to App so the main UI renders
+    onComplete();
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#f5efe6", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        input::placeholder { color: #c0a080; }
+        input:focus { border-color: rgba(160,120,48,0.5) !important; }
+      `}</style>
+
+      <div style={{ width: "100%", maxWidth: "400px", background: "#fff", border: "1px solid rgba(139,90,43,0.18)", borderRadius: "24px", padding: "40px 32px", animation: "fadeIn 0.5s ease" }}>
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "13px", fontWeight: "700", letterSpacing: "0.12em", textTransform: "uppercase", color: "#a07830", marginBottom: "10px" }}>
+            Welcome
+          </div>
+          <h1 style={{ margin: "0 0 10px 0", fontFamily: "'Playfair Display', serif", fontSize: "24px", fontWeight: "900", color: "#2c1a0e" }}>
+            Create Your Password
+          </h1>
+          <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'Lora', serif", fontStyle: "italic", lineHeight: "1.6" }}>
+            You're in. Set a password so you and your partner can sign in any time.
+          </p>
+        </div>
+
+        <input
+          type="password"
+          placeholder="Choose a password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={inputStyle}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        />
+        <input
+          type="password"
+          placeholder="Confirm password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          style={inputStyle}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        />
+
+        <p style={{ margin: "0 0 16px 0", fontSize: "11px", color: "#b0906a", fontFamily: "'DM Sans', sans-serif" }}>
+          Must be at least 8 characters. Share this with your partner so you can both log in.
+        </p>
+
+        {error && (
+          <div style={{ background: "rgba(200,60,60,0.08)", border: "1px solid rgba(200,60,60,0.25)", borderRadius: "10px", color: "#8b2020", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{ width: "100%", background: loading ? "rgba(160,120,48,0.3)" : "linear-gradient(135deg, #a07830, #c8943a)", border: "none", borderRadius: "12px", color: loading ? "rgba(255,255,255,0.5)" : "#fff", cursor: loading ? "not-allowed" : "pointer", fontSize: "14px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", transition: "all 0.2s ease" }}
+        >
+          {loading ? "Saving…" : "Save Password & Enter App"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
   const [usedMap, setUsedMap] = useState({});
   const [dataLoading, setDataLoading] = useState(false);
   const [tab, setTab] = useState("daily");
@@ -1420,8 +1519,20 @@ export default function App() {
       setSession(session);
       setAuthLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      // When a user arrives via magic link, Supabase fires SIGNED_IN.
+      // Detect the "magiclink" token type in the URL and show the password
+      // setup screen instead of going straight into the app.
+      if (event === "SIGNED_IN" && session) {
+        const params = new URLSearchParams(window.location.hash.replace("#", "?"));
+        const tokenType = params.get("type");
+        if (tokenType === "magiclink") {
+          setNeedsPasswordSetup(true);
+          // Clean the token from the URL so a refresh doesn't re-trigger this
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -1465,6 +1576,10 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: "#f5efe6", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ color: "#8b6a4a", fontFamily: "'DM Sans', sans-serif", fontSize: "14px" }}>Loading…</div>
     </div>
+  );
+
+  if (needsPasswordSetup && session) return (
+    <PasswordSetup onComplete={() => setNeedsPasswordSetup(false)} />
   );
 
   if (!session) return <AuthScreen />;
