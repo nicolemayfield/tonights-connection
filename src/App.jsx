@@ -1292,7 +1292,7 @@ function AuthScreen() {
 
       <div style={{ width: "100%", maxWidth: "400px", background: "#fff", border: "1px solid rgba(139,90,43,0.18)", borderRadius: "24px", padding: "40px 32px", animation: "fadeIn 0.5s ease" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "40px", marginBottom: "12px" }}>❤️</div>
+        
           <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', Georgia, serif", fontSize: "26px", fontWeight: "900", background: "linear-gradient(135deg, #f5e6c8 0%, #d4a84e 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             Tonight's Connection
           </h1>
