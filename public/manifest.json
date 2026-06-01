@@ -1,0 +1,17 @@
+{
+  "name": "Tonight's Connection",
+  "short_name": "Tonight's",
+  "description": "Questions for deeper love and connection",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F0E8",
+  "theme_color": "#C8943A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
