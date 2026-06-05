@@ -1,4 +1,5 @@
-// ─────────────────────────────────────────────────────────────────────────────
+
+    // ─────────────────────────────────────────────────────────────────────────────
 // TONIGHT'S CONNECTION — with Auth + Cloud Storage
 //
 // SETUP INSTRUCTIONS (do these before deploying to Vercel):
@@ -1236,10 +1237,8 @@ function getDailyQuestion(categoryId, questions, usedMap) {
 
 // ─── AUTH SCREEN ──────────────────────────────────────────────────────────────
 function AuthScreen() {
-  const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -1253,19 +1252,11 @@ function AuthScreen() {
   const handleSubmit = async () => {
     setError(""); setSuccessMsg("");
     if (!email || !password) { setError("Please fill in all fields."); return; }
-    if (mode === "signup" && password !== confirmPassword) { setError("Passwords don't match."); return; }
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error: e } = await supabase.auth.signUp({ email, password });
-        if (e) throw e;
-        setSuccessMsg("Account created! Check your email to confirm, then sign in.");
-        setMode("signin");
-      } else {
-        const { error: e } = await supabase.auth.signInWithPassword({ email, password });
-        if (e) throw e;
-      }
+      const { error: e } = await supabase.auth.signInWithPassword({ email, password });
+      if (e) throw e;
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
     } finally { setLoading(false); }
@@ -1300,39 +1291,20 @@ function AuthScreen() {
           </p>
         </div>
 
-        <div style={{ display: "flex", background: "#f5efe6", borderRadius: "12px", padding: "4px", marginBottom: "24px" }}>
-          {["signin", "signup"].map((m) => (
-            <button key={m} onClick={() => { setMode(m); setError(""); setSuccessMsg(""); }}
-              style={{ flex: 1, background: mode === m ? "#fff" : "transparent", border: `1px solid ${mode === m ? "rgba(160,120,48,0.4)" : "transparent"}`, borderRadius: "10px", color: mode === m ? "#8a6220" : "#a08060", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "9px", transition: "all 0.2s ease" }}>
-              {m === "signin" ? "Sign In" : "Create Account"}
-            </button>
-          ))}
-        </div>
-
         <input type="email" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
-        {mode === "signup" && (
-          <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
-        )}
 
         {error && <div style={{ background: "rgba(200,60,60,0.08)", border: "1px solid rgba(200,60,60,0.25)", borderRadius: "10px", color: "#8b2020", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{error}</div>}
         {successMsg && <div style={{ background: "rgba(60,140,80,0.08)", border: "1px solid rgba(60,140,80,0.25)", borderRadius: "10px", color: "#2a6e3a", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{successMsg}</div>}
 
         <button onClick={handleSubmit} disabled={loading}
           style={{ width: "100%", background: loading ? "rgba(160,120,48,0.3)" : "linear-gradient(135deg, #a07830, #c8943a)", border: "none", borderRadius: "12px", color: loading ? "rgba(255,255,255,0.5)" : "#fff", cursor: loading ? "not-allowed" : "pointer", fontSize: "14px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", transition: "all 0.2s ease", marginBottom: "16px" }}>
-          {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Account"}
+          {loading ? "Please wait…" : "Sign In"}
         </button>
 
-        {mode === "signin" && (
-          <button onClick={handleForgotPassword} style={{ background: "none", border: "none", color: "#a08060", cursor: "pointer", display: "block", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", margin: "0 auto", padding: "4px", textAlign: "center", textDecoration: "underline" }}>
-            Forgot password?
-          </button>
-        )}
-        {mode === "signup" && (
-          <p style={{ color: "#a08060", fontSize: "11px", textAlign: "center", margin: "12px 0 0 0", lineHeight: "1.5" }}>
-            Both partners use the same account to share question history across all devices.
-          </p>
-        )}
+        <button onClick={handleForgotPassword} style={{ background: "none", border: "none", color: "#a08060", cursor: "pointer", display: "block", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", margin: "0 auto", padding: "4px", textAlign: "center", textDecoration: "underline" }}>
+          Forgot password?
+        </button>
       </div>
     </div>
   );
