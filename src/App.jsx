@@ -1287,7 +1287,7 @@ function AuthScreen() {
             Tonight's Connection
           </h1>
           <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
-            994 questions for deeper love
+            Thoughtful Questions for Deeper Connection
           </p>
         </div>
 
