@@ -1,5 +1,4 @@
-
-    // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 // TONIGHT'S CONNECTION — with Auth + Cloud Storage
 //
 // SETUP INSTRUCTIONS (do these before deploying to Vercel):
@@ -1219,6 +1218,88 @@ const ALL_CATEGORIES = [
   },
 ];
 
+// ─── BONUS QUESTIONS ──────────────────────────────────────────────────────────
+// Add new bonus questions here when you have them ready.
+// They will automatically appear in the Bonus Questions tab for all users.
+// Each question rests for 180 days after use, then reappears.
+// Category ID for tracking: "bonus"
+const BONUS_QUESTIONS = [
+    "If we accidentally missed our flight and had 24 unexpected hours together, how would we spend every minute?",
+    "If I surprised you with dessert at midnight, what would you secretly hope I walked in carrying?",
+    "Before you answer this one, scoot as close to me as you comfortably can. What's your favorite thing about being this close to me?",
+    "If we woke up tomorrow in Paris with absolutely no plans, where would we wander first?",
+    "If our relationship had a signature scent, what would it smell like?",
+    "If someone secretly paid for our dream weekend together, what would it include from beginning to end?",
+    "Look into my eyes for 15 seconds before answering. What did you notice?",
+    "If we opened a little café together, what would we name it?",
+    "If we had to slow dance in one place for the rest of our lives, where would it be?",
+    "Which smile of mine gets you every single time?",
+    "If we recreated our first date using only things we could find at home, how would we do it?",
+    "What's one tiny thing I do that always makes you smile?",
+    "If we could magically skip every responsibility tomorrow, how would we spend the day together?",
+    "Without saying a word, show me how you'd get my attention from across a crowded room.",
+    "If we had matching tattoos that only we understood, what would they be?",
+    "If we were snowed into a cabin for three days, what would our perfect first evening look like?",
+    "If we had our own secret handshake, what ridiculous move would have to be part of it?",
+    "If someone made a movie about us, what's the funniest scene they would include?",
+    "If we could instantly master one hobby together, what would you choose?",
+    "If we spent an entire Saturday laughing until our cheeks hurt, what do you think we'd end up doing?",
+    "If we could press pause on life for one entire day, what would we do together?",
+    "Before answering, hold my hand. What's one thing you hope we never stop doing together?",
+    "If we could instantly become experts at one activity to enjoy together, what would you choose?",
+    "If we each planned a surprise date for the other with the exact same budget, what do you think we'd come up with?",
+    "If our love story had a title, what would it be?",
+    "Without explaining, point to who is more likely to start laughing at the worst possible moment.",
+    "If we rented a beach house for a week, what would our perfect day look like from sunrise to bedtime?",
+    "What's one compliment you've thought about giving me but haven't said yet?",
+    "If we could relive one conversation we've had, which one would you choose?",
+    "Before you answer, give me your best smile. What's your favorite memory of us laughing together?",
+    "If we could magically teleport somewhere for dinner tonight, where are we eating?",
+    "If our relationship had a theme song, what would its vibe be?",
+    "If we had to invent our own holiday, what would we celebrate every year?",
+    "What's one adventure that sounds just a little crazy—but you'd actually do if I asked?",
+    "If we spent an entire day with our phones turned off, what do you think we'd enjoy most?",
+    "If we built the ultimate blanket fort tonight, what snacks, movies, or games are coming inside with us?",
+    "What's something simple that instantly makes a day feel special when we're together?",
+    "If someone gave us tickets to any concert in history, who are we going to see?",
+    "Without using any words, make the face you'd give me if I suggested an unexpected road trip right now.",
+    "If we had one free afternoon with perfect weather, where would you want us to go?",
+    "What's something we've never done together that you'd love for us to try this year?",
+    "If we had to describe our relationship using only three emojis, which ones would you choose?",
+    "Imagine we're celebrating our 25th anniversary. What's the story you think we'll love telling everyone about us?",
+    "If we had to cook dinner together using only five ingredients, what would we make?",
+    "What's one ordinary errand that somehow sounds fun if we're doing it together?",
+    "If someone gave us a camera crew for one day to document our lives, what would be the funniest moment they'd probably capture?",
+    "Without saying anything, show me the dance move you'd use to celebrate really good news with me.",
+    "If we had our own signature dessert, what would it be?",
+    "What's one thing you hope we never become too old to do together?",
+    "If we created a time capsule of our relationship today, what three things would we put inside?",
+    "If we got caught in a warm summer rainstorm, would you run for cover or stay and enjoy it with me?",
+    "If you could instantly plan our perfect Sunday, what would it look like from morning until bedtime?",
+    "What's something about me that still catches you off guard—in the best way?",
+    "If we had to choose one city to visit together every year for the rest of our lives, which would you pick?",
+    "If our relationship had an official mascot, what would it be?",
+    "If we had an unexpected snow day with nowhere to be, how would we spend it?",
+    "What's one tiny habit of mine that you've grown to love?",
+    "If we were contestants on a game show together, what would our biggest strength as a team be?",
+    "What's one thing you think we'd laugh about if we looked back on today ten years from now?",
+    "If we could spend one evening learning something completely new together, what would you choose?",
+    "If we had a porch with two rocking chairs overlooking a beautiful view, what conversation do you imagine us having there?",
+    "If we could create one brand-new tradition that's uniquely ours, what would it be?",
+    "If we could spend one evening under a sky full of stars anywhere in the world, where would you take us?",
+    "What's one little thing I do that instantly makes your day better?",
+    "If we had to build the world's greatest ice cream sundae together, what would be on it?",
+    "If we each wrote one sentence describing our relationship, what do you think we'd have in common?",
+    "Without saying a word, show me the face you'd make if I told you I had a surprise waiting for us.",
+    "If we had an entire amusement park to ourselves, which ride would we head to first?",
+    "What's one tradition from your childhood you'd love for us to make our own?",
+    "If our relationship had an official holiday, what would people do to celebrate it?",
+    "If someone gave us front-row seats to any live performance, what are we going to see?",
+    "If we could instantly become amazing dancers, what style would you want us to learn?",
+    "If we had to invent a secret code word that meant 'I love you,' what would it be?",
+    "Imagine we're looking through a photo album 30 years from now. Which picture do you hope makes us stop and smile the longest?"
+];
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function isAvailable(usedMap, categoryId, questionText) {
   const key = `${categoryId}::${questionText}`;
@@ -1272,18 +1353,21 @@ function AuthScreen() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5efe6", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", position: "relative" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .auth-glow { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 58%, rgba(255,235,170,0.22) 0%, transparent 62%); pointer-events: none; }
         input::placeholder { color: #c0a080; }
-        input:focus { border-color: rgba(160,120,48,0.5) !important; }
+        input:focus { border-color: rgba(160,120,48,0.55) !important; }
       `}</style>
 
-      <div style={{ width: "100%", maxWidth: "400px", background: "#fff", border: "1px solid rgba(139,90,43,0.18)", borderRadius: "24px", padding: "40px 32px", animation: "fadeIn 0.5s ease" }}>
+      <div className="auth-glow" />
+
+      <div style={{ width: "100%", maxWidth: "400px", background: "rgba(255,252,245,0.95)", border: "none", borderRadius: "28px", padding: "40px 32px", animation: "fadeIn 0.5s ease", boxShadow: "0 20px 64px rgba(40,16,0,0.5), 0 2px 8px rgba(40,16,0,0.2)", position: "relative" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', Georgia, serif", fontSize: "26px", fontWeight: "900", background: "linear-gradient(135deg, #f5e6c8 0%, #d4a84e 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', Georgia, serif", fontSize: "26px", fontWeight: "900", background: "linear-gradient(135deg, #2c1a0e 0%, #a07830 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             Tonight's Connection
           </h1>
           <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
@@ -1298,13 +1382,14 @@ function AuthScreen() {
         {successMsg && <div style={{ background: "rgba(60,140,80,0.08)", border: "1px solid rgba(60,140,80,0.25)", borderRadius: "10px", color: "#2a6e3a", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{successMsg}</div>}
 
         <button onClick={handleSubmit} disabled={loading}
-          style={{ width: "100%", background: loading ? "rgba(160,120,48,0.3)" : "linear-gradient(135deg, #a07830, #c8943a)", border: "none", borderRadius: "12px", color: loading ? "rgba(255,255,255,0.5)" : "#fff", cursor: loading ? "not-allowed" : "pointer", fontSize: "14px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", transition: "all 0.2s ease", marginBottom: "16px" }}>
+          style={{ width: "100%", background: loading ? "rgba(184,134,42,0.3)" : "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: loading ? "rgba(255,255,255,0.5)" : "#fff", cursor: loading ? "not-allowed" : "pointer", fontSize: "14px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", transition: "all 0.2s ease", marginBottom: "16px", boxShadow: "0 4px 18px rgba(184,134,42,0.45)" }}>
           {loading ? "Please wait…" : "Sign In"}
         </button>
 
-        <button onClick={handleForgotPassword} style={{ background: "none", border: "none", color: "#a08060", cursor: "pointer", display: "block", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", margin: "0 auto", padding: "4px", textAlign: "center", textDecoration: "underline" }}>
+        <button onClick={handleForgotPassword} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", display: "block", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", margin: "0 auto", padding: "4px", textAlign: "center", textDecoration: "underline" }}>
           Forgot password?
         </button>
+        </div>
       </div>
     </div>
   );
@@ -1322,19 +1407,22 @@ function QuestionCard({ question, category, onUse, isUsed }) {
   };
 
   return (
-    <div style={{ background: justUsed ? `${category.accent}12` : "#fff", border: `1px solid ${localUsed ? category.accent + "60" : "rgba(139,90,43,0.12)"}`, borderRadius: "16px", padding: "20px 22px", marginBottom: "10px", opacity: localUsed && !justUsed ? 0.5 : 1, transition: "all 0.3s ease" }}>
-      <p style={{ margin: "0 0 14px 0", color: localUsed && !justUsed ? "#c0a880" : "#2c1a0e", fontSize: "15px", lineHeight: "1.6", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>
-        {question}
-      </p>
-      {!localUsed ? (
-        <button onClick={handleUse} style={{ background: category.accent, border: "none", borderRadius: "8px", color: "#fff", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.05em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase" }}>
-          ✓ Use This Tonight
-        </button>
-      ) : (
-        <span style={{ fontSize: "12px", color: category.accent, fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", opacity: 0.7 }}>
-          {justUsed ? "✨ Saved to your account — returns in 180 days" : "Used · Returns in 180 days"}
-        </span>
-      )}
+    <div style={{ background: "#fff", border: `1px solid ${localUsed ? category.accent + "40" : "rgba(184,134,42,0.18)"}`, borderRadius: "14px", marginBottom: "10px", opacity: localUsed && !justUsed ? 0.5 : 1, transition: "all 0.3s ease", overflow: "hidden" }}>
+      <div style={{ height: "3px", background: localUsed && !justUsed ? "rgba(184,134,42,0.2)" : `linear-gradient(90deg, ${category.accent}, ${category.accent}99)` }} />
+      <div style={{ padding: "16px 18px" }}>
+        <p style={{ margin: "0 0 14px 0", color: localUsed && !justUsed ? "#c0a880" : "#2c1a0e", fontSize: "15px", lineHeight: "1.6", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>
+          {question}
+        </p>
+        {!localUsed ? (
+          <button onClick={handleUse} style={{ background: `linear-gradient(135deg, ${category.accent}, ${category.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase", boxShadow: `0 3px 10px ${category.accent}44` }}>
+            Select
+          </button>
+        ) : (
+          <span style={{ fontSize: "12px", color: category.accent, fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", opacity: 0.7 }}>
+            {justUsed ? "✨ Answered — returns in 180 days" : "Answered · Returns in 180 days"}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -1360,13 +1448,13 @@ function CategoryView({ category, usedMap, onUse, onBack }) {
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
         {["available", "resting"].map((f) => (
           <button key={f} onClick={() => setFilter(f)} style={{ background: filter === f ? `${category.accent}15` : "#fff", border: `1px solid ${filter === f ? category.accent : "rgba(139,90,43,0.18)"}`, borderRadius: "8px", color: filter === f ? category.accent : "#a08060", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.04em", padding: "7px 14px", textTransform: "capitalize" }}>
-            {f === "available" ? `${available.length} Available` : `${used.length} Resting`}
+            {f === "available" ? `${available.length} Available` : `${used.length} Answered`}
           </button>
         ))}
       </div>
       {shown.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 24px", color: "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
-          {filter === "available" ? "All questions in this category are resting." : "No questions used yet in this category."}
+          {filter === "available" ? "All questions in this category have been answered." : "No questions answered yet in this category."}
         </div>
       ) : shown.map((q, i) => (
         <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} />
@@ -1412,9 +1500,9 @@ function PasswordSetup({ onComplete }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5efe6", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}>
+    <div style={{ minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input::placeholder { color: #c0a080; }
@@ -1556,7 +1644,7 @@ export default function App() {
   const dailyQuestions = ALL_CATEGORIES.map((cat) => ({ category: cat, question: getDailyQuestion(cat.id, cat.questions, usedMap) })).filter((d) => d.question !== null);
 
   if (authLoading) return (
-    <div style={{ minHeight: "100vh", background: "#f5efe6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ color: "#8b6a4a", fontFamily: "'DM Sans', sans-serif", fontSize: "14px" }}>Loading…</div>
     </div>
   );
@@ -1568,35 +1656,35 @@ export default function App() {
   if (!session) return <AuthScreen />;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5efe6", fontFamily: "'DM Sans', sans-serif", color: "#2c1a0e" }}>
+    <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "'DM Sans', sans-serif", color: "#2c1a0e" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(139,90,43,0.25); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(184,134,42,0.3); border-radius: 4px; }
       `}</style>
 
       {/* HEADER */}
-      <div style={{ background: "#efe8dc", borderBottom: "1px solid rgba(139,90,43,0.15)", padding: "16px 20px", position: "sticky", top: 0, zIndex: 100 }}>
+      <div style={{ background: "#ffffff", borderBottom: "1px solid rgba(184,134,42,0.2)", padding: "16px 20px", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: "640px", margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h1 style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontSize: "20px", fontWeight: "900", letterSpacing: "-0.02em", background: "linear-gradient(135deg, #2c1a0e 0%, #a07830 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              <h1 style={{ margin: 0, fontFamily: "'Tenor Sans', serif", fontSize: "20px", fontWeight: "400", color: "#2c1a0e", letterSpacing: "0.01em" }}>
                 Tonight's Connection
               </h1>
               <p style={{ margin: 0, fontSize: "11px", color: "#8b6a4a", letterSpacing: "0.04em" }}>
-                {dataLoading ? "Loading your history…" : `${totalAvailable} ready · ${totalUsed} resting`}
+                {dataLoading ? "Loading your history…" : `${totalAvailable} ready · ${totalUsed} answered`}
               </p>
             </div>
             <button onClick={handleSignOut} style={{ background: "#fff", border: "1px solid rgba(139,90,43,0.22)", borderRadius: "8px", color: "#8b6a4a", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "6px 12px" }}>
               Sign Out
             </button>
           </div>
-          <div style={{ display: "flex", gap: "6px", marginTop: "14px" }}>
-            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }].map((t) => (
+          <div style={{ display: "flex", gap: "6px", marginTop: "14px", flexWrap: "wrap" }}>
+            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "bonus", label: "Bonus Questions", icon: "✦" }].map((t) => (
               <button key={t.id} onClick={() => { setTab(t.id); setSelectedCategory(null); }}
-                style={{ flex: 1, background: tab === t.id ? "rgba(160,120,48,0.1)" : "transparent", border: `1px solid ${tab === t.id ? "rgba(160,120,48,0.4)" : "rgba(139,90,43,0.18)"}`, borderRadius: "10px", color: tab === t.id ? "#8a6220" : "#a08060", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.03em", padding: "9px 12px", transition: "all 0.2s ease" }}>
+                style={{ flex: 1, minWidth: "calc(50% - 3px)", background: tab === t.id ? "rgba(160,120,48,0.1)" : "transparent", border: `1px solid ${tab === t.id ? "rgba(160,120,48,0.4)" : "rgba(139,90,43,0.18)"}`, borderRadius: "10px", color: tab === t.id ? "#8a6220" : "#a08060", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.03em", padding: "9px 10px", transition: "all 0.2s ease" }}>
                 {t.icon} {t.label}
               </button>
             ))}
@@ -1621,15 +1709,18 @@ export default function App() {
               <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
             </div>
             {dailyQuestions.map(({ category, question }) => (
-              <div key={category.id} style={{ background: "#fff", border: `1px solid ${category.accent}40`, borderRadius: "20px", padding: "20px", marginBottom: "14px", boxShadow: "0 1px 8px rgba(139,90,43,0.07)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
-                  <span style={{ color: category.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>— {category.label}</span>
+              <div key={category.id} style={{ background: "#fff", border: `1px solid ${category.accent}30`, borderRadius: "16px", marginBottom: "14px", boxShadow: "0 2px 12px rgba(139,90,43,0.08)", overflow: "hidden" }}>
+                <div style={{ height: "3px", background: `linear-gradient(90deg, ${category.accent}, ${category.accent}99, ${category.accent})` }} />
+                <div style={{ padding: "18px 20px" }}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <span style={{ color: category.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>— {category.label}</span>
+                  </div>
+                  <p style={{ margin: "0 0 16px 0", fontSize: "16px", lineHeight: "1.65", color: "#2c1a0e", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{question}"</p>
+                  <button onClick={() => handleUse(category.id, question)}
+                    style={{ background: `linear-gradient(135deg, ${category.accent}, ${category.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", cursor: "pointer", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "9px 18px", textTransform: "uppercase", boxShadow: `0 3px 10px ${category.accent}44` }}>
+                    Select
+                  </button>
                 </div>
-                <p style={{ margin: "0 0 16px 0", fontSize: "16px", lineHeight: "1.65", color: "#2c1a0e", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{question}"</p>
-                <button onClick={() => handleUse(category.id, question)}
-                  style={{ background: category.accent, border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.05em", padding: "10px 18px", textTransform: "uppercase" }}>
-                  ✓ We'll Use This Tonight
-                </button>
               </div>
             ))}
             {dailyQuestions.length === 0 && (
@@ -1671,6 +1762,49 @@ export default function App() {
 
         {tab === "browse" && selectedCategory && (
           <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} />
+        )}
+
+        {tab === "bonus" && (
+          <div style={{ animation: "fadeIn 0.4s ease" }}>
+            <div style={{ marginBottom: "28px" }}>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', serif", fontSize: "26px", fontWeight: "700", color: "#2c1a0e" }}>Bonus Questions</h2>
+              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Extra questions added over time. Use one whenever you're ready — it rests for 180 days, then returns.</p>
+            </div>
+
+            {BONUS_QUESTIONS.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "64px 24px" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "rgba(160,120,48,0.1)", border: "1px solid rgba(160,120,48,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: "20px" }}>✦</div>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", fontWeight: "700", color: "#2c1a0e", margin: "0 0 10px" }}>More questions coming soon</p>
+                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "14px", color: "#8b6a4a", lineHeight: "1.6", margin: 0 }}>New bonus questions are added periodically. Check back for fresh ways to connect.</p>
+              </div>
+            ) : (
+              <>
+                <p style={{ margin: "0 0 20px 0", fontSize: "12px", color: "#a08060", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.03em" }}>
+                  {BONUS_QUESTIONS.filter(q => isAvailable(usedMap, "bonus", q)).length} of {BONUS_QUESTIONS.length} available
+                </p>
+                {BONUS_QUESTIONS.map((question, i) => {
+                  const used = !isAvailable(usedMap, "bonus", question);
+                  return (
+                    <div key={i} style={{ background: "#fff", border: `1px solid ${used ? "rgba(160,120,48,0.3)" : "rgba(139,90,43,0.12)"}`, borderRadius: "16px", padding: "20px 22px", marginBottom: "10px", opacity: used ? 0.5 : 1, transition: "all 0.3s ease" }}>
+                      <p style={{ margin: "0 0 14px 0", color: used ? "#c0a880" : "#2c1a0e", fontSize: "15px", lineHeight: "1.6", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>
+                        {question}
+                      </p>
+                      {!used ? (
+                        <button onClick={() => handleUse("bonus", question)}
+                          style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase", boxShadow: "0 3px 10px rgba(184,134,42,0.4)" }}>
+                          Select
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: "12px", color: "#a07830", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", opacity: 0.7 }}>
+                          Used · Returns in 180 days
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>
