@@ -1358,12 +1358,11 @@ function AuthScreen() {
         @import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-        .auth-glow { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 58%, rgba(255,235,170,0.22) 0%, transparent 62%); pointer-events: none; }
         input::placeholder { color: #c0a080; }
         input:focus { border-color: rgba(160,120,48,0.55) !important; }
       `}</style>
 
-      <div className="auth-glow" />
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 58%, rgba(255,235,170,0.2) 0%, transparent 62%)", pointerEvents: "none" }} />
 
       <div style={{ width: "100%", maxWidth: "400px", background: "rgba(255,252,245,0.95)", border: "none", borderRadius: "28px", padding: "40px 32px", animation: "fadeIn 0.5s ease", boxShadow: "0 20px 64px rgba(40,16,0,0.5), 0 2px 8px rgba(40,16,0,0.2)", position: "relative" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
