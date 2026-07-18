@@ -1444,10 +1444,10 @@ function CategoryView({ category, usedMap, onUse, onBack }) {
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
           <h2 style={{ margin: 0, color: category.accent, fontFamily: "'Playfair Display', serif", fontSize: "22px", fontWeight: "700" }}>{category.label}</h2>
         </div>
-        <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>{available.length} available · {used.length} resting</p>
+        <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>{available.length} available · {used.length} answered</p>
       </div>
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-        {["available", "resting"].map((f) => (
+        {["available", "answered"].map((f) => (
           <button key={f} onClick={() => setFilter(f)} style={{ background: filter === f ? `${category.accent}15` : "#fff", border: `1px solid ${filter === f ? category.accent : "rgba(139,90,43,0.18)"}`, borderRadius: "8px", color: filter === f ? category.accent : "#a08060", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.04em", padding: "7px 14px", textTransform: "capitalize" }}>
             {f === "available" ? `${available.length} Available` : `${used.length} Answered`}
           </button>
@@ -1727,7 +1727,7 @@ export default function App() {
             {dailyQuestions.length === 0 && (
               <div style={{ textAlign: "center", padding: "64px 24px", color: "#b0906a" }}>
                 <div style={{ fontSize: "48px", marginBottom: "16px" }}>🌙</div>
-                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "18px", color: "#8b6a4a" }}>All questions are resting. They'll return over the next 90 days.</p>
+                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "18px", color: "#8b6a4a" }}>All questions have been answered. They'll return over the next 180 days.</p>
               </div>
             )}
           </div>
