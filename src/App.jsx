@@ -1353,9 +1353,9 @@ function AuthScreen() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", position: "relative" }}>
+    <div style={{ height: "100vh", minHeight: "100vh", background: "linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%)", backgroundAttachment: "scroll", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", position: "relative", overscrollBehavior: "none", overflow: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input::placeholder { color: #c0a080; }
@@ -1368,7 +1368,7 @@ function AuthScreen() {
         <div style={{ height: "3px", background: "linear-gradient(90deg, #b8862a, #d4a84e, #b8862a)" }} />
         <div style={{ padding: "36px 32px" }}>
           <div style={{ textAlign: "center", marginBottom: "32px" }}>
-            <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Tenor Sans', serif", fontSize: "28px", fontWeight: "400", color: "#2c1a0e", letterSpacing: "0.01em" }}>
+            <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Monoton', cursive", fontSize: "22px", fontWeight: "400", color: "#2c1a0e", lineHeight: "1.35", letterSpacing: "0.02em" }}>
               Tonight's Connection
             </h1>
             <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.02em" }}>
@@ -1442,7 +1442,7 @@ function CategoryView({ category, usedMap, onUse, onBack }) {
       </button>
       <div style={{ marginBottom: "28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-          <h2 style={{ margin: 0, color: category.accent, fontFamily: "'Playfair Display', serif", fontSize: "22px", fontWeight: "700" }}>{category.label}</h2>
+          <h2 style={{ margin: 0, color: category.accent, fontFamily: "'DM Sans', sans-serif", fontSize: "22px", fontWeight: "600" }}>{category.label}</h2>
         </div>
         <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>{available.length} available · {used.length} answered</p>
       </div>
@@ -1501,9 +1501,9 @@ function PasswordSetup({ onComplete }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px" }}>
+    <div style={{ height: "100vh", height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none", overscrollBehavior: "none", padding: "24px 16px" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input::placeholder { color: #c0a080; }
@@ -1515,7 +1515,7 @@ function PasswordSetup({ onComplete }) {
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "13px", fontWeight: "700", letterSpacing: "0.12em", textTransform: "uppercase", color: "#a07830", marginBottom: "10px" }}>
             Welcome
           </div>
-          <h1 style={{ margin: "0 0 10px 0", fontFamily: "'Playfair Display', serif", fontSize: "24px", fontWeight: "900", color: "#2c1a0e" }}>
+          <h1 style={{ margin: "0 0 10px 0", fontFamily: "'DM Sans', sans-serif", fontSize: "24px", fontWeight: "600", color: "#2c1a0e" }}>
             Create Your Password
           </h1>
           <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'Lora', serif", fontStyle: "italic", lineHeight: "1.6" }}>
@@ -1645,7 +1645,7 @@ export default function App() {
   const dailyQuestions = ALL_CATEGORIES.map((cat) => ({ category: cat, question: getDailyQuestion(cat.id, cat.questions, usedMap) })).filter((d) => d.question !== null);
 
   if (authLoading) return (
-    <div style={{ minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ height: "100vh", height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none", overscrollBehavior: "none" }}>
       <div style={{ color: "#8b6a4a", fontFamily: "'DM Sans', sans-serif", fontSize: "14px" }}>Loading…</div>
     </div>
   );
@@ -1657,13 +1657,15 @@ export default function App() {
   if (!session) return <AuthScreen />;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "'DM Sans', sans-serif", color: "#2c1a0e" }}>
+    <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "'DM Sans', sans-serif", color: "#2c1a0e", overscrollBehavior: "none", overscrollBehavior: "none" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(184,134,42,0.3); border-radius: 4px; }
+        html, body { overscroll-behavior: none; -webkit-overflow-scrolling: touch; height: 100%; }
+        html, body { overscroll-behavior: none; -webkit-overflow-scrolling: touch; height: 100%; }
       `}</style>
 
       {/* HEADER */}
@@ -1706,7 +1708,7 @@ export default function App() {
         {tab === "daily" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', serif", fontSize: "26px", fontWeight: "700", color: "#2c1a0e" }}>Tonight's Questions</h2>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'DM Sans', sans-serif", fontSize: "26px", fontWeight: "600", color: "#2c1a0e" }}>Tonight's Questions</h2>
               <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
             </div>
             {dailyQuestions.map(({ category, question }) => (
@@ -1736,7 +1738,7 @@ export default function App() {
         {tab === "browse" && !selectedCategory && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', serif", fontSize: "26px", fontWeight: "700", color: "#2c1a0e" }}>35 Categories</h2>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'DM Sans', sans-serif", fontSize: "26px", fontWeight: "600", color: "#2c1a0e" }}>35 Categories</h2>
               <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Browse all 994 questions by topic.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
@@ -1768,8 +1770,8 @@ export default function App() {
         {tab === "bonus" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', serif", fontSize: "26px", fontWeight: "700", color: "#2c1a0e" }}>Bonus Questions</h2>
-              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Extra questions added over time. Use one whenever you're ready — it rests for 180 days, then returns.</p>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'DM Sans', sans-serif", fontSize: "26px", fontWeight: "600", color: "#2c1a0e" }}>Bonus Questions</h2>
+              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Extra questions added over time. Use one whenever you're ready — it's answered for 180 days, then returns.</p>
             </div>
 
             {BONUS_QUESTIONS.length === 0 ? (
