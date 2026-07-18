@@ -1362,32 +1362,34 @@ function AuthScreen() {
         input:focus { border-color: rgba(160,120,48,0.55) !important; }
       `}</style>
 
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 58%, rgba(255,235,170,0.2) 0%, transparent 62%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "radial-gradient(ellipse at 50% 58%, rgba(255,235,170,0.2) 0%, transparent 62%)", pointerEvents: "none" }} />
 
-      <div style={{ width: "100%", maxWidth: "400px", background: "rgba(255,252,245,0.95)", border: "none", borderRadius: "28px", padding: "40px 32px", animation: "fadeIn 0.5s ease", boxShadow: "0 20px 64px rgba(40,16,0,0.5), 0 2px 8px rgba(40,16,0,0.2)", position: "relative" }}>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Playfair Display', Georgia, serif", fontSize: "26px", fontWeight: "900", background: "linear-gradient(135deg, #2c1a0e 0%, #a07830 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            Tonight's Connection
-          </h1>
-          <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
-            Thoughtful Questions for Stronger Connections
-          </p>
-        </div>
+      <div style={{ width: "100%", maxWidth: "400px", background: "#fff", border: "none", borderRadius: "28px", overflow: "hidden", animation: "fadeIn 0.5s ease", boxShadow: "0 20px 64px rgba(40,16,0,0.5)", position: "relative" }}>
+        <div style={{ height: "3px", background: "linear-gradient(90deg, #b8862a, #d4a84e, #b8862a)" }} />
+        <div style={{ padding: "36px 32px" }}>
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
+            <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Tenor Sans', serif", fontSize: "28px", fontWeight: "400", color: "#2c1a0e", letterSpacing: "0.01em" }}>
+              Tonight's Connection
+            </h1>
+            <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.02em" }}>
+              Thoughtful Questions for Stronger Connections
+            </p>
+          </div>
 
-        <input type="email" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
+          <input type="email" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
 
-        {error && <div style={{ background: "rgba(200,60,60,0.08)", border: "1px solid rgba(200,60,60,0.25)", borderRadius: "10px", color: "#8b2020", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{error}</div>}
-        {successMsg && <div style={{ background: "rgba(60,140,80,0.08)", border: "1px solid rgba(60,140,80,0.25)", borderRadius: "10px", color: "#2a6e3a", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{successMsg}</div>}
+          {error && <div style={{ background: "rgba(200,60,60,0.08)", border: "1px solid rgba(200,60,60,0.25)", borderRadius: "10px", color: "#8b2020", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{error}</div>}
+          {successMsg && <div style={{ background: "rgba(60,140,80,0.08)", border: "1px solid rgba(60,140,80,0.25)", borderRadius: "10px", color: "#2a6e3a", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{successMsg}</div>}
 
-        <button onClick={handleSubmit} disabled={loading}
-          style={{ width: "100%", background: loading ? "rgba(184,134,42,0.3)" : "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: loading ? "rgba(255,255,255,0.5)" : "#fff", cursor: loading ? "not-allowed" : "pointer", fontSize: "14px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", transition: "all 0.2s ease", marginBottom: "16px", boxShadow: "0 4px 18px rgba(184,134,42,0.45)" }}>
-          {loading ? "Please wait…" : "Sign In"}
-        </button>
+          <button onClick={handleSubmit} disabled={loading}
+            style={{ width: "100%", background: loading ? "rgba(184,134,42,0.3)" : "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: loading ? "rgba(255,255,255,0.5)" : "#fff", cursor: loading ? "not-allowed" : "pointer", fontSize: "14px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", transition: "all 0.2s ease", marginBottom: "16px", boxShadow: "0 4px 18px rgba(184,134,42,0.45)" }}>
+            {loading ? "Please wait…" : "Sign In"}
+          </button>
 
-        <button onClick={handleForgotPassword} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", display: "block", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", margin: "0 auto", padding: "4px", textAlign: "center", textDecoration: "underline" }}>
-          Forgot password?
-        </button>
+          <button onClick={handleForgotPassword} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", display: "block", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", margin: "0 auto", padding: "4px", textAlign: "center", textDecoration: "underline" }}>
+            Forgot password?
+          </button>
         </div>
       </div>
     </div>
