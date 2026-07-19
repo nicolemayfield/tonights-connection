@@ -1323,6 +1323,7 @@ function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const inputStyle = {
     width: "100%", background: "#faf6f0", border: "1px solid rgba(139,90,43,0.2)",
@@ -1377,7 +1378,12 @@ function AuthScreen() {
           </div>
 
           <input type="email" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
+          <div style={{ position: "relative", marginBottom: "12px" }}>
+            <input type={showPassword ? "text" : "password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ ...inputStyle, marginBottom: 0, paddingRight: "44px" }} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
+            <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#b8862a", fontSize: "16px", padding: "0", lineHeight: 1 }}>
+              {showPassword ? "🙈" : "👁"}
+            </button>
+          </div>
 
           {error && <div style={{ background: "rgba(200,60,60,0.08)", border: "1px solid rgba(200,60,60,0.25)", borderRadius: "10px", color: "#8b2020", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{error}</div>}
           {successMsg && <div style={{ background: "rgba(60,140,80,0.08)", border: "1px solid rgba(60,140,80,0.25)", borderRadius: "10px", color: "#2a6e3a", fontSize: "13px", padding: "10px 14px", marginBottom: "14px" }}>{successMsg}</div>}
@@ -1473,6 +1479,8 @@ function PasswordSetup({ onComplete }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const inputStyle = {
     width: "100%", background: "#faf6f0", border: "1px solid rgba(139,90,43,0.2)",
@@ -1523,22 +1531,32 @@ function PasswordSetup({ onComplete }) {
           </p>
         </div>
 
-        <input
-          type="password"
-          placeholder="Choose a password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={inputStyle}
-          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-        />
-        <input
-          type="password"
-          placeholder="Confirm password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          style={inputStyle}
-          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-        />
+        <div style={{ position: "relative", marginBottom: "12px" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Choose a password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ ...inputStyle, marginBottom: 0, paddingRight: "44px" }}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          />
+          <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#b8862a", fontSize: "16px", padding: "0", lineHeight: 1 }}>
+            {showPassword ? "🙈" : "👁"}
+          </button>
+        </div>
+        <div style={{ position: "relative", marginBottom: "12px" }}>
+          <input
+            type={showConfirm ? "text" : "password"}
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            style={{ ...inputStyle, marginBottom: 0, paddingRight: "44px" }}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          />
+          <button onClick={() => setShowConfirm(!showConfirm)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#b8862a", fontSize: "16px", padding: "0", lineHeight: 1 }}>
+            {showConfirm ? "🙈" : "👁"}
+          </button>
+        </div>
 
         <p style={{ margin: "0 0 16px 0", fontSize: "11px", color: "#b0906a", fontFamily: "'DM Sans', sans-serif" }}>
           Must be at least 8 characters. Share this with your partner so you can both log in.
