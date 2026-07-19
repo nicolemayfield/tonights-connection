@@ -1371,7 +1371,7 @@ function AuthScreen() {
             <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Monoton', cursive", fontSize: "22px", fontWeight: "400", color: "#2c1a0e", lineHeight: "1.35", letterSpacing: "0.02em" }}>
               Tonight's Connection
             </h1>
-            <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.02em" }}>
+            <p style={{ margin: 0, color: "#8b6a4a", fontSize: "15px", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: "300", lineHeight: "1.4" }}>
               Thoughtful Questions for Stronger Connections
             </p>
           </div>
