@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resend Access Link — Tonight's Connection</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 28px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 20px 64px rgba(40,16,0,0.5);
+    }
+
+    .gold-bar {
+      height: 3px;
+      background: linear-gradient(90deg, #b8862a, #d4a84e, #b8862a);
+    }
+
+    .card-inner {
+      padding: 40px 36px 36px;
+    }
+
+    .title {
+      font-family: 'Monoton', cursive;
+      font-size: 18px;
+      color: #2c1a0e;
+      line-height: 1.35;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 15px;
+      color: #8b6a4a;
+      text-align: center;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(184,134,42,0.2);
+    }
+    .divider-gem { color: #d4a84e; font-size: 12px; }
+
+    .help-text {
+      font-size: 13px;
+      color: #8b6a4a;
+      line-height: 1.65;
+      margin-bottom: 22px;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b6a4a;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"] {
+      width: 100%;
+      background: #faf4ea;
+      border: 1px solid rgba(184,134,42,0.22);
+      border-radius: 12px;
+      color: #2c1a0e;
+      font-size: 15px;
+      font-family: 'DM Sans', sans-serif;
+      padding: 14px 16px;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s ease;
+    }
+    input[type="email"]:focus {
+      border-color: rgba(184,134,42,0.55);
+    }
+    input[type="email"]::placeholder { color: #c0a080; }
+
+    button {
+      width: 100%;
+      background: linear-gradient(135deg, #b8862a, #d4a84e);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 14px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+      box-shadow: 0 4px 18px rgba(184,134,42,0.4);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .message {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      text-align: center;
+      display: none;
+    }
+    .message.success {
+      background: rgba(60,140,80,0.08);
+      border: 1px solid rgba(60,140,80,0.25);
+      color: #2a6e3a;
+    }
+    .message.error {
+      background: rgba(200,60,60,0.08);
+      border: 1px solid rgba(200,60,60,0.25);
+      color: #8b2020;
+    }
+    .message.info {
+      background: rgba(184,134,42,0.08);
+      border: 1px solid rgba(184,134,42,0.25);
+      color: #7a5a18;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #b8862a;
+      font-size: 12px;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="gold-bar"></div>
+    <div class="card-inner">
+
+      <div class="title">Tonight's Connection</div>
+      <div class="subtitle">Access Help</div>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-gem">✦</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <p class="help-text">
+        Enter the email address you used at checkout and we'll send you a fresh access link right away.
+      </p>
+
+      <label for="email">Your email address</label>
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter your checkout email"
+        autocomplete="email"
+      />
+
+      <button id="submit-btn" onclick="resendLink()">
+        Send My Access Link
+      </button>
+
+      <div id="message" class="message"></div>
+
+      <a class="back-link" href="https://tonights-connection.vercel.app">
+        ← Back to Tonight's Connection
+      </a>
+
+    </div>
+  </div>
+
+  <script>
+    async function resendLink() {
+      const email = document.getElementById('email').value.trim();
+      const btn = document.getElementById('submit-btn');
+      const msg = document.getElementById('message');
+
+      // Reset
+      msg.style.display = 'none';
+      msg.className = 'message';
+
+      if (!email || !email.includes('@')) {
+        msg.textContent = 'Please enter a valid email address.';
+        msg.classList.add('error');
+        msg.style.display = 'block';
+        return;
+      }
+
+      // Loading state
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      try {
+        // ── IMPORTANT: Replace this URL with your actual Vercel app URL
+        const response = await fetch('https://tonights-connection.vercel.app/api/resend-magic-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          msg.textContent = data.message;
+          msg.classList.add('success');
+          document.getElementById('email').value = '';
+        } else if (data.error) {
+          msg.textContent = data.error;
+          msg.classList.add('error');
+        } else {
+          msg.textContent = data.message;
+          msg.classList.add('info');
+        }
+
+      } catch (err) {
+        msg.textContent = 'Something went wrong. Please try again or contact us directly.';
+        msg.classList.add('error');
+      }
+
+      msg.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Send My Access Link';
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('email').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') resendLink();
+    });
+  </script>
+</body>
+</html>
