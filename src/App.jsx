@@ -1355,7 +1355,7 @@ function AuthScreen() {
   return (
     <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", overflowY: "auto" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:wght@300;400&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input::placeholder { color: #c0a080; }
@@ -1442,7 +1442,7 @@ function CategoryView({ category, usedMap, onUse, onBack }) {
       </button>
       <div style={{ marginBottom: "28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-          <h2 style={{ margin: 0, color: category.accent, fontFamily: "'DM Sans', sans-serif", fontSize: "22px", fontWeight: "600" }}>{category.label}</h2>
+          <h2 style={{ margin: 0, color: category.accent, fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300" }}>{category.label}</h2>
         </div>
         <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>{available.length} available · {used.length} answered</p>
       </div>
@@ -1503,7 +1503,7 @@ function PasswordSetup({ onComplete }) {
   return (
     <div style={{ height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none", overflow: "hidden", padding: "24px 16px" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:wght@300;400&family=Tenor+Sans&family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input::placeholder { color: #c0a080; }
@@ -1659,7 +1659,7 @@ export default function App() {
   return (
     <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "'DM Sans', sans-serif", color: "#2c1a0e", overscrollBehavior: "none" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:wght@300;400&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
@@ -1707,7 +1707,7 @@ export default function App() {
         {tab === "daily" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'DM Sans', sans-serif", fontSize: "26px", fontWeight: "600", color: "#2c1a0e" }}>Tonight's Questions</h2>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>Tonight's Questions</h2>
               <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
             </div>
             {dailyQuestions.map(({ category, question }) => (
@@ -1737,7 +1737,7 @@ export default function App() {
         {tab === "browse" && !selectedCategory && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'DM Sans', sans-serif", fontSize: "26px", fontWeight: "600", color: "#2c1a0e" }}>35 Categories</h2>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>35 Categories</h2>
               <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Browse all 994 questions by topic.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
@@ -1769,14 +1769,14 @@ export default function App() {
         {tab === "bonus" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'DM Sans', sans-serif", fontSize: "26px", fontWeight: "600", color: "#2c1a0e" }}>Bonus Questions</h2>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>Bonus Questions</h2>
               <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Extra questions added over time. Use one whenever you're ready — it's answered for 180 days, then returns.</p>
             </div>
 
             {BONUS_QUESTIONS.length === 0 ? (
               <div style={{ textAlign: "center", padding: "64px 24px" }}>
                 <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "rgba(160,120,48,0.1)", border: "1px solid rgba(160,120,48,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: "20px" }}>✦</div>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "20px", fontWeight: "700", color: "#2c1a0e", margin: "0 0 10px" }}>More questions coming soon</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "24px", fontWeight: "300", color: "#2c1a0e", margin: "0 0 10px" }}>More questions coming soon</p>
                 <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "14px", color: "#8b6a4a", lineHeight: "1.6", margin: 0 }}>New bonus questions are added periodically. Check back for fresh ways to connect.</p>
               </div>
             ) : (
