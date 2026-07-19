@@ -1353,7 +1353,7 @@ function AuthScreen() {
   };
 
   return (
-    <div style={{ height: "100vh", minHeight: "100vh", background: "linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%)", backgroundAttachment: "scroll", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", position: "relative", overscrollBehavior: "none", overflow: "hidden" }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", overflowY: "auto" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
@@ -1501,7 +1501,7 @@ function PasswordSetup({ onComplete }) {
   };
 
   return (
-    <div style={{ height: "100vh", height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none", overscrollBehavior: "none", padding: "24px 16px" }}>
+    <div style={{ height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none", overflow: "hidden", padding: "24px 16px" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
@@ -1645,7 +1645,7 @@ export default function App() {
   const dailyQuestions = ALL_CATEGORIES.map((cat) => ({ category: cat, question: getDailyQuestion(cat.id, cat.questions, usedMap) })).filter((d) => d.question !== null);
 
   if (authLoading) return (
-    <div style={{ height: "100vh", height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none", overscrollBehavior: "none" }}>
+    <div style={{ height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none" }}>
       <div style={{ color: "#8b6a4a", fontFamily: "'DM Sans', sans-serif", fontSize: "14px" }}>Loading…</div>
     </div>
   );
@@ -1657,15 +1657,14 @@ export default function App() {
   if (!session) return <AuthScreen />;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "'DM Sans', sans-serif", color: "#2c1a0e", overscrollBehavior: "none", overscrollBehavior: "none" }}>
+    <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "'DM Sans', sans-serif", color: "#2c1a0e", overscrollBehavior: "none" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(184,134,42,0.3); border-radius: 4px; }
-        html, body { overscroll-behavior: none; -webkit-overflow-scrolling: touch; height: 100%; }
-        html, body { overscroll-behavior: none; -webkit-overflow-scrolling: touch; height: 100%; }
+        html, body { overscroll-behavior: none; overscroll-behavior-x: none; overscroll-behavior-y: none; -webkit-overflow-scrolling: touch; height: 100%; touch-action: pan-y; }
       `}</style>
 
       {/* HEADER */}
@@ -1673,7 +1672,7 @@ export default function App() {
         <div style={{ maxWidth: "640px", margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h1 style={{ margin: 0, fontFamily: "'Tenor Sans', serif", fontSize: "20px", fontWeight: "400", color: "#2c1a0e", letterSpacing: "0.01em" }}>
+              <h1 style={{ margin: 0, fontFamily: "'Monoton', cursive", fontSize: "15px", fontWeight: "400", color: "#2c1a0e", letterSpacing: "0.02em", lineHeight: "1.3" }}>
                 Tonight's Connection
               </h1>
               <p style={{ margin: 0, fontSize: "11px", color: "#8b6a4a", letterSpacing: "0.04em" }}>
