@@ -1216,6 +1216,86 @@ const ALL_CATEGORIES = [
       "What are some strange things that people you know believe?",
     ],
   },
+,
+  {
+    id: "bonus", label: "✦ Bonus Questions", color: "#fffaf4", accent: "#b8862a",
+    questions: [
+      "If we accidentally missed our flight and had 24 unexpected hours together, how would we spend every minute?",
+      "If I surprised you with dessert at midnight, what would you secretly hope I walked in carrying?",
+      "Before you answer this one, scoot as close to me as you comfortably can. What's your favorite thing about being this close to me?",
+      "If we woke up tomorrow in Paris with absolutely no plans, where would we wander first?",
+      "If our relationship had a signature scent, what would it smell like?",
+      "If someone secretly paid for our dream weekend together, what would it include from beginning to end?",
+      "Look into my eyes for 15 seconds before answering. What did you notice?",
+      "If we opened a little café together, what would we name it?",
+      "If we had to slow dance in one place for the rest of our lives, where would it be?",
+      "Which smile of mine gets you every single time?",
+      "If we recreated our first date using only things we could find at home, how would we do it?",
+      "What's one tiny thing I do that always makes you smile?",
+      "If we could magically skip every responsibility tomorrow, how would we spend the day together?",
+      "Without saying a word, show me how you'd get my attention from across a crowded room.",
+      "If we had matching tattoos that only we understood, what would they be?",
+      "If we were snowed into a cabin for three days, what would our perfect first evening look like?",
+      "If we had our own secret handshake, what ridiculous move would have to be part of it?",
+      "If someone made a movie about us, what's the funniest scene they would include?",
+      "If we could instantly master one hobby together, what would you choose?",
+      "If we spent an entire Saturday laughing until our cheeks hurt, what do you think we'd end up doing?",
+      "If we could press pause on life for one entire day, what would we do together?",
+      "Before answering, hold my hand. What's one thing you hope we never stop doing together?",
+      "If we could instantly become experts at one activity to enjoy together, what would you choose?",
+      "If we each planned a surprise date for the other with the exact same budget, what do you think we'd come up with?",
+      "If our love story had a title, what would it be?",
+      "Without explaining, point to who is more likely to start laughing at the worst possible moment.",
+      "If we rented a beach house for a week, what would our perfect day look like from sunrise to bedtime?",
+      "What's one compliment you've thought about giving me but haven't said yet?",
+      "If we could relive one conversation we've had, which one would you choose?",
+      "Before you answer, give me your best smile. What's your favorite memory of us laughing together?",
+      "If we could magically teleport somewhere for dinner tonight, where are we eating?",
+      "If our relationship had a theme song, what would its vibe be?",
+      "If we had to invent our own holiday, what would we celebrate every year?",
+      "What's one adventure that sounds just a little crazy — but you'd actually do if I asked?",
+      "If we spent an entire day with our phones turned off, what do you think we'd enjoy most?",
+      "If we built the ultimate blanket fort tonight, what snacks, movies, or games are coming inside with us?",
+      "What's something simple that instantly makes a day feel special when we're together?",
+      "If someone gave us tickets to any concert in history, who are we going to see?",
+      "Without using any words, make the face you'd give me if I suggested an unexpected road trip right now.",
+      "If we had one free afternoon with perfect weather, where would you want us to go?",
+      "What's something we've never done together that you'd love for us to try this year?",
+      "If we had to describe our relationship using only three emojis, which ones would you choose?",
+      "Imagine we're celebrating our 25th anniversary. What's the story you think we'll love telling everyone about us?",
+      "If we had to cook dinner together using only five ingredients, what would we make?",
+      "What's one ordinary errand that somehow sounds fun if we're doing it together?",
+      "If someone gave us a camera crew for one day to document our lives, what would be the funniest moment they'd probably capture?",
+      "Without saying anything, show me the dance move you'd use to celebrate really good news with me.",
+      "If we had our own signature dessert, what would it be?",
+      "What's one thing you hope we never become too old to do together?",
+      "If we created a time capsule of our relationship today, what three things would we put inside?",
+      "If we got caught in a warm summer rainstorm, would you run for cover or stay and enjoy it with me?",
+      "If you could instantly plan our perfect Sunday, what would it look like from morning until bedtime?",
+      "What's something about me that still catches you off guard — in the best way?",
+      "If we had to choose one city to visit together every year for the rest of our lives, which would you pick?",
+      "If our relationship had an official mascot, what would it be?",
+      "If we had an unexpected snow day with nowhere to be, how would we spend it?",
+      "What's one tiny habit of mine that you've grown to love?",
+      "If we were contestants on a game show together, what would our biggest strength as a team be?",
+      "What's one thing you think we'd laugh about if we looked back on today ten years from now?",
+      "If we could spend one evening learning something completely new together, what would you choose?",
+      "If we had a porch with two rocking chairs overlooking a beautiful view, what conversation do you imagine us having there?",
+      "If we could create one brand-new tradition that's uniquely ours, what would it be?",
+      "If we could spend one evening under a sky full of stars anywhere in the world, where would you take us?",
+      "What's one little thing I do that instantly makes your day better?",
+      "If we had to build the world's greatest ice cream sundae together, what would be on it?",
+      "If we each wrote one sentence describing our relationship, what do you think we'd have in common?",
+      "Without saying a word, show me the face you'd make if I told you I had a surprise waiting for us.",
+      "If we had an entire amusement park to ourselves, which ride would we head to first?",
+      "What's one tradition from your childhood you'd love for us to make our own?",
+      "If our relationship had an official holiday, what would people do to celebrate it?",
+      "If someone gave us front-row seats to any live performance, what are we going to see?",
+      "If we could instantly become amazing dancers, what style would you want us to learn?",
+      "If we had to invent a secret code word that meant 'I love you,' what would it be?",
+      "Imagine we're looking through a photo album 30 years from now. Which picture do you hope makes us stop and smile the longest?"
+    ],
+  },
 ];
 
 // ─── BONUS QUESTIONS ──────────────────────────────────────────────────────────
@@ -1223,81 +1303,254 @@ const ALL_CATEGORIES = [
 // They will automatically appear in the Bonus Questions tab for all users.
 // Each question rests for 180 days after use, then reappears.
 // Category ID for tracking: "bonus"
-const BONUS_QUESTIONS = [
-    "If we accidentally missed our flight and had 24 unexpected hours together, how would we spend every minute?",
-    "If I surprised you with dessert at midnight, what would you secretly hope I walked in carrying?",
-    "Before you answer this one, scoot as close to me as you comfortably can. What's your favorite thing about being this close to me?",
-    "If we woke up tomorrow in Paris with absolutely no plans, where would we wander first?",
-    "If our relationship had a signature scent, what would it smell like?",
-    "If someone secretly paid for our dream weekend together, what would it include from beginning to end?",
-    "Look into my eyes for 15 seconds before answering. What did you notice?",
-    "If we opened a little café together, what would we name it?",
-    "If we had to slow dance in one place for the rest of our lives, where would it be?",
-    "Which smile of mine gets you every single time?",
-    "If we recreated our first date using only things we could find at home, how would we do it?",
-    "What's one tiny thing I do that always makes you smile?",
-    "If we could magically skip every responsibility tomorrow, how would we spend the day together?",
-    "Without saying a word, show me how you'd get my attention from across a crowded room.",
-    "If we had matching tattoos that only we understood, what would they be?",
-    "If we were snowed into a cabin for three days, what would our perfect first evening look like?",
-    "If we had our own secret handshake, what ridiculous move would have to be part of it?",
-    "If someone made a movie about us, what's the funniest scene they would include?",
-    "If we could instantly master one hobby together, what would you choose?",
-    "If we spent an entire Saturday laughing until our cheeks hurt, what do you think we'd end up doing?",
-    "If we could press pause on life for one entire day, what would we do together?",
-    "Before answering, hold my hand. What's one thing you hope we never stop doing together?",
-    "If we could instantly become experts at one activity to enjoy together, what would you choose?",
-    "If we each planned a surprise date for the other with the exact same budget, what do you think we'd come up with?",
-    "If our love story had a title, what would it be?",
-    "Without explaining, point to who is more likely to start laughing at the worst possible moment.",
-    "If we rented a beach house for a week, what would our perfect day look like from sunrise to bedtime?",
-    "What's one compliment you've thought about giving me but haven't said yet?",
-    "If we could relive one conversation we've had, which one would you choose?",
-    "Before you answer, give me your best smile. What's your favorite memory of us laughing together?",
-    "If we could magically teleport somewhere for dinner tonight, where are we eating?",
-    "If our relationship had a theme song, what would its vibe be?",
-    "If we had to invent our own holiday, what would we celebrate every year?",
-    "What's one adventure that sounds just a little crazy—but you'd actually do if I asked?",
-    "If we spent an entire day with our phones turned off, what do you think we'd enjoy most?",
-    "If we built the ultimate blanket fort tonight, what snacks, movies, or games are coming inside with us?",
-    "What's something simple that instantly makes a day feel special when we're together?",
-    "If someone gave us tickets to any concert in history, who are we going to see?",
-    "Without using any words, make the face you'd give me if I suggested an unexpected road trip right now.",
-    "If we had one free afternoon with perfect weather, where would you want us to go?",
-    "What's something we've never done together that you'd love for us to try this year?",
-    "If we had to describe our relationship using only three emojis, which ones would you choose?",
-    "Imagine we're celebrating our 25th anniversary. What's the story you think we'll love telling everyone about us?",
-    "If we had to cook dinner together using only five ingredients, what would we make?",
-    "What's one ordinary errand that somehow sounds fun if we're doing it together?",
-    "If someone gave us a camera crew for one day to document our lives, what would be the funniest moment they'd probably capture?",
-    "Without saying anything, show me the dance move you'd use to celebrate really good news with me.",
-    "If we had our own signature dessert, what would it be?",
-    "What's one thing you hope we never become too old to do together?",
-    "If we created a time capsule of our relationship today, what three things would we put inside?",
-    "If we got caught in a warm summer rainstorm, would you run for cover or stay and enjoy it with me?",
-    "If you could instantly plan our perfect Sunday, what would it look like from morning until bedtime?",
-    "What's something about me that still catches you off guard—in the best way?",
-    "If we had to choose one city to visit together every year for the rest of our lives, which would you pick?",
-    "If our relationship had an official mascot, what would it be?",
-    "If we had an unexpected snow day with nowhere to be, how would we spend it?",
-    "What's one tiny habit of mine that you've grown to love?",
-    "If we were contestants on a game show together, what would our biggest strength as a team be?",
-    "What's one thing you think we'd laugh about if we looked back on today ten years from now?",
-    "If we could spend one evening learning something completely new together, what would you choose?",
-    "If we had a porch with two rocking chairs overlooking a beautiful view, what conversation do you imagine us having there?",
-    "If we could create one brand-new tradition that's uniquely ours, what would it be?",
-    "If we could spend one evening under a sky full of stars anywhere in the world, where would you take us?",
-    "What's one little thing I do that instantly makes your day better?",
-    "If we had to build the world's greatest ice cream sundae together, what would be on it?",
-    "If we each wrote one sentence describing our relationship, what do you think we'd have in common?",
-    "Without saying a word, show me the face you'd make if I told you I had a surprise waiting for us.",
-    "If we had an entire amusement park to ourselves, which ride would we head to first?",
-    "What's one tradition from your childhood you'd love for us to make our own?",
-    "If our relationship had an official holiday, what would people do to celebrate it?",
-    "If someone gave us front-row seats to any live performance, what are we going to see?",
-    "If we could instantly become amazing dancers, what style would you want us to learn?",
-    "If we had to invent a secret code word that meant 'I love you,' what would it be?",
-    "Imagine we're looking through a photo album 30 years from now. Which picture do you hope makes us stop and smile the longest?"
+
+// ─── DATE IDEAS ───────────────────────────────────────────────────────────────
+const DATE_IDEAS = [
+  "Have a picnic in the park with homemade food and great conversation.",
+  "Take a sunrise hike and watch the world wake up together.",
+  "Visit a local farmers market and cook a meal from what you find.",
+  "Spend the day at a botanical garden and explore nature together.",
+  "Take a scenic drive with no destination — just music and conversation.",
+  "Visit a museum or art gallery and share what moves you.",
+  "Attend a live concert or outdoor music event together.",
+  "Take a cooking class and learn something new side by side.",
+  "Go stargazing with a blanket and hot drinks.",
+  "Spend a day at the beach or lake with no phones.",
+  "Visit a local winery or distillery for a tasting experience.",
+  "Explore a new neighborhood in your city like tourists.",
+  "Attend a local festival or cultural event.",
+  "Go to a pottery or painting class together.",
+  "Take a bike ride through a scenic trail or path.",
+  "Visit a historic site or landmark in your area.",
+  "Attend a comedy show and laugh the night away.",
+  "Go to a drive-in movie if one is nearby.",
+  "Spend a morning at a coffee shop reading and talking.",
+  "Visit a bookstore and pick out a book for each other.",
+  "Go to a farmers market and have breakfast there.",
+  "Take a dance class together — salsa, swing, or ballroom.",
+  "Attend a local theater production or play.",
+  "Go to an escape room and solve it together.",
+  "Visit an aquarium or zoo and explore together.",
+  "Take a hot air balloon ride if available in your area.",
+  "Go kayaking or canoeing on a calm lake or river.",
+  "Visit a pumpkin patch or apple orchard in season.",
+  "Attend a wine and paint night together.",
+  "Go to a rooftop bar and enjoy the view.",
+  "Take a day trip to a nearby small town.",
+  "Visit a flea market or antique fair together.",
+  "Go to a jazz club or blues bar for live music.",
+  "Spend an evening doing a puzzle with music and candles.",
+  "Make homemade pizza together and watch a classic movie.",
+  "Visit a local spa for a couples treatment.",
+  "Go ice skating or roller skating together.",
+  "Attend a sporting event for a team you both enjoy.",
+  "Take an architecture or history walking tour of your city.",
+  "Visit a rooftop garden or sky deck together.",
+  "Go to a food truck festival and try something new.",
+  "Take a sunset walk along the water.",
+  "Visit a butterfly garden or bird sanctuary.",
+  "Attend a poetry reading or open mic night.",
+  "Go to a karaoke bar and sing your hearts out.",
+  "Take a weekend road trip to somewhere neither of you has been.",
+  "Visit a lavender farm or sunflower field in season.",
+  "Go to a drive-through safari or wildlife park.",
+  "Attend a wine festival or craft beer event.",
+  "Take a couples yoga or meditation class.",
+  "Visit a lighthouse or scenic overlook together.",
+  "Go on a ghost tour of your city.",
+  "Attend a cooking competition or food tasting event.",
+  "Take a pottery wheel class together.",
+  "Visit a vintage or retro diner for breakfast.",
+  "Go to a flower market and build your own bouquet.",
+  "Attend a planetarium show together.",
+  "Take a photography walk and capture the city together.",
+  "Visit a chocolate or candy factory for a tour and tasting.",
+  "Go to an outdoor Shakespeare or theatre performance.",
+  "Spend a day volunteering together for a cause you both care about.",
+  "Visit a waterfall or natural landmark nearby.",
+  "Go to a mini golf course and make it competitive.",
+  "Attend a trivia night at a local bar or restaurant.",
+  "Take a glass blowing or jewelry making class.",
+  "Visit a local farm for a u-pick experience.",
+  "Go paddleboarding or surfing together.",
+  "Attend a gala or charity event dressed to impress.",
+  "Take a mixology class and learn to make craft cocktails.",
+  "Visit a historic mansion or estate for a tour.",
+  "Go to a board game café and play for hours.",
+  "Attend a midnight screening of a classic film.",
+  "Take a helicopter tour of your city or a scenic area.",
+  "Visit a Japanese or zen garden together.",
+  "Go to a comedy improv show.",
+  "Attend a flower arranging class together.",
+  "Take a ferry or boat tour of a nearby waterway.",
+  "Visit a science museum or interactive exhibit.",
+  "Go to an outdoor yoga class in the park.",
+  "Attend a live podcast recording if one is near you.",
+  "Take a cheese or charcuterie making class.",
+  "Visit a canyon, gorge, or natural wonder nearby.",
+  "Go to a magic show or illusionist performance.",
+  "Attend a couples retreat or relationship workshop.",
+  "Take a morning walk and stop at every café that looks interesting.",
+  "Visit an observatory and learn about the stars together.",
+  "Go to a trampoline park or adventure center.",
+  "Attend a silent disco or themed dance event.",
+  "Take a surfing lesson together even if you've never tried.",
+  "Visit a state or national park you've never explored.",
+  "Go to an indoor climbing gym together.",
+  "Attend a live cooking demonstration by a local chef.",
+  "Take a tour of a local brewery or meadery.",
+  "Visit an outdoor sculpture garden or art installation.",
+  "Go to a night market together.",
+  "Attend a candlelight concert in a unique venue.",
+  "Take a sunrise yoga class together.",
+  "Visit a wildlife refuge or nature preserve.",
+  "Go to an axe throwing venue for something totally different.",
+  "Attend a foreign film screening with subtitles.",
+  "Take a floral design class together.",
+  "Visit a tea house for a traditional tea experience.",
+  "Go to a paint and sip class with a fun theme.",
+  "Attend an outdoor art fair or craft market.",
+  "Take a sailing lesson or rent a sailboat for the day.",
+  "Visit a local cemetery with historical significance for a quiet walk.",
+  "Go to a retro arcade bar together.",
+  "Attend a classical music or symphony performance.",
+  "Take a macramé or weaving workshop together.",
+  "Visit a garden nursery and pick plants for your home.",
+  "Go to a food hall and try dishes from five different vendors.",
+  "Attend a improv comedy class together.",
+  "Take a historical walking ghost tour at night.",
+  "Visit a rooftop pool or hotel lounge for an evening out.",
+  "Go on a sunset horseback ride.",
+  "Attend a local author book reading and signing.",
+  "Take a candle making or soap making class.",
+  "Visit a natural hot spring or thermal pool.",
+  "Go to a comedy festival or stand-up marathon.",
+  "Attend a vintage car show together.",
+  "Take a sushi making class together.",
+  "Visit a labyrinth or meditation garden for a quiet afternoon.",
+  "Go to a sensory deprivation float tank for something completely different.",
+  "Attend a lantern festival or light display event.",
+  "Take a sunrise drive to watch the city wake up.",
+  "Visit a public library and explore together — pick a book for each other.",
+  "Go to a midnight hike under the full moon.",
+  "Attend a street art or mural tour of your city.",
+  "Take a wine blending class and create your own bottle.",
+  "Visit a butterfly house or insect museum.",
+  "Go to an outdoor concert in a vineyard setting.",
+  "Attend a farmers market cooking demonstration.",
+  "Take a tour of a local artist's studio.",
+  "Visit a cave or cavern system for a unique underground experience.",
+  "Go to a retro drive-in for a double feature.",
+  "Attend a storytelling open mic night.",
+  "Take a day trip to a lighthouse and explore the coast.",
+  "Visit a folk art or quirky roadside attraction.",
+  "Go to a rooftop cinema screening.",
+  "Attend a workshop at a local art center.",
+  "Take a nighttime kayak tour with glow paddles.",
+  "Visit a historic railroad museum or take a scenic train ride.",
+  "Go to a farmers market and challenge yourselves to cook with five new ingredients.",
+  "Attend a cultural festival celebrating food, music and traditions.",
+  "Take a mixology masterclass at a speakeasy.",
+  "Visit a tall ship or historic vessel for a tour.",
+  "Go to a high ropes course or zip line adventure.",
+  "Attend a murder mystery dinner together.",
+  "Take a street food tour of your city.",
+  "Visit a crystal or gem show and pick something meaningful.",
+  "Go to a documentary film festival.",
+  "Attend a seasonal festival like a tulip or cherry blossom event.",
+  "Take a bread or pastry baking class together.",
+  "Visit a waterpark or lazy river for a lighthearted day.",
+  "Go to a vintage photo booth and capture the moment.",
+  "Attend a jazz brunch at a local venue.",
+  "Take a scuba diving or snorkeling lesson.",
+  "Visit a local fire station or police station for a community tour.",
+  "Go to an outdoor laser tag or adventure game.",
+  "Attend a traditional tea ceremony if available in your city.",
+  "Take a day trip to a farmers inn or bed and breakfast.",
+  "Visit a natural history museum and explore the exhibits.",
+  "Go to a comedy hypnosis show together.",
+  "Attend a couples communication or love language workshop.",
+  "Take a stained glass or mosaic art class.",
+  "Visit a lavish hotel lobby bar for cocktails and ambiance.",
+  "Go to a hot yoga class together.",
+  "Attend a vintage market or swap meet.",
+  "Take a parasailing or hang gliding experience.",
+  "Visit a butterfly release event or seasonal nature spectacle.",
+  "Go to a trivia pub crawl.",
+  "Attend a food and wine pairing dinner.",
+  "Take a blacksmithing or leather crafting workshop.",
+  "Visit a waterfront promenade and rent a bike.",
+  "Go to a comedy roast or charity roast event.",
+  "Attend a storytelling festival or spoken word event.",
+  "Take a truffle hunting or foraging experience.",
+  "Visit an ice sculpture exhibit or winter festival.",
+  "Go to a pottery market and pick pieces for your home.",
+  "Attend a burlesque or cabaret show for a fun night out.",
+  "Take a soap opera or acting class together just for fun.",
+  "Visit a Japanese izakaya for small plates and sake.",
+  "Go to a pop-up dining experience or secret supper club.",
+  "Attend a behind-the-scenes tour of a theater or opera house.",
+  "Take a day trip and visit every antique shop you pass.",
+  "Visit a planetarium for a night sky laser show.",
+  "Go to a local roller derby or unique sporting event.",
+  "Attend a speed networking or social mixer for couples.",
+  "Take a perfume or candle blending workshop.",
+  "Visit a forest bathing or guided nature therapy walk.",
+  "Go to a laugh yoga class together.",
+  "Attend a live mural painting event.",
+  "Take a glasswork or stained glass tour at a studio.",
+  "Visit a farm sanctuary and spend time with the animals.",
+  "Go to a spoken word poetry slam.",
+  "Attend a wine harvest or olive oil pressing experience.",
+  "Take a tandem bike ride through a scenic route.",
+  "Visit a hot spring resort for a weekend of relaxation.",
+  "Go to an outdoor amphitheater for a summer concert.",
+  "Attend a cultural cooking class featuring a cuisine you've never tried.",
+  "Take a walking food tour of a historic neighborhood."
+];
+
+// ─── CONVERSATION GAMES ───────────────────────────────────────────────────────
+const CONVERSATION_GAMES = [
+  {
+    title: "Family Game Night",
+    description: "Bring everyone together for a night of great conversations.",
+    categories: ["awkward", "movies", "entertainment"]
+  },
+  {
+    title: "Pizza & Game Night",
+    description: "Order your favorite pizza and let Tonight's Connection be the game.",
+    categories: ["personality", "imagination", "awkward"]
+  },
+  {
+    title: "Cards & Conversation",
+    description: "Deal the cards and enjoy the conversation.",
+    categories: ["love", "character", "growth"]
+  },
+  {
+    title: "Puzzle Night",
+    description: "Build a puzzle together while the conversation unfolds.",
+    categories: ["memory", "childhood", "goals"]
+  },
+  {
+    title: "Roll the Dice",
+    description: "Roll the dice. The highest roll chooses the next question.",
+    categories: ["reflection", "habits", "heroes"]
+  },
+  {
+    title: "Popcorn & Questions",
+    description: "Make popcorn, grab your favorite snacks, and let the conversation begin.",
+    categories: ["movies", "entertainment", "imagination"]
+  },
+  {
+    title: "Couples Game Night",
+    description: "Invite another couple over and enjoy an evening of conversation together.",
+    categories: ["personality", "awkward", "entertainment"]
+  },
+  {
+    title: "Category Challenge",
+    description: "Choose one category and stay in it for the entire game. See where the conversation takes you.",
+    categories: ["character", "goals", "memory", "love"]
+  }
 ];
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -1590,6 +1843,7 @@ export default function App() {
   const [tab, setTab] = useState("daily");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [usedToast, setUsedToast] = useState(false);
+  const [activeGame, setActiveGame] = useState(null);
 
   // Listen for auth state
   useEffect(() => {
@@ -1701,10 +1955,10 @@ export default function App() {
               Sign Out
             </button>
           </div>
-          <div style={{ display: "flex", gap: "6px", marginTop: "14px", flexWrap: "wrap" }}>
-            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "bonus", label: "Bonus Questions", icon: "✦" }].map((t) => (
-              <button key={t.id} onClick={() => { setTab(t.id); setSelectedCategory(null); }}
-                style={{ flex: 1, minWidth: "calc(50% - 3px)", background: tab === t.id ? "rgba(160,120,48,0.1)" : "transparent", border: `1px solid ${tab === t.id ? "rgba(160,120,48,0.4)" : "rgba(139,90,43,0.18)"}`, borderRadius: "10px", color: tab === t.id ? "#8a6220" : "#a08060", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.03em", padding: "9px 10px", transition: "all 0.2s ease" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginTop: "12px" }}>
+            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Conversation Games", icon: "🎲" }].map((t) => (
+              <button key={t.id} onClick={() => { setTab(t.id); setSelectedCategory(null); setActiveGame(null); }}
+                style={{ background: tab === t.id ? "rgba(184,134,42,0.12)" : "transparent", border: `1px solid ${tab === t.id ? "rgba(184,134,42,0.45)" : "rgba(139,90,43,0.15)"}`, borderRadius: "8px", color: tab === t.id ? "#8a6220" : "#b0906a", cursor: "pointer", fontSize: "9px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.03em", padding: "8px 6px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
                 {t.icon} {t.label}
               </button>
             ))}
@@ -1784,46 +2038,101 @@ export default function App() {
           <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} />
         )}
 
-        {tab === "bonus" && (
+        {tab === "dateIdeas" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>Bonus Questions</h2>
-              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Extra questions added over time. Use one whenever you're ready — it's answered for 180 days, then returns.</p>
+            <div style={{ marginBottom: "24px" }}>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>Date Ideas</h2>
+              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Select one when you've done it — it returns in 180 days so you can enjoy it again.</p>
             </div>
+            <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "#a08060", fontFamily: "'DM Sans', sans-serif" }}>
+              {DATE_IDEAS.filter(d => isAvailable(usedMap, "date_ideas", d)).length} of {DATE_IDEAS.length} available
+            </p>
+            {DATE_IDEAS.map((idea, i) => {
+              const used = !isAvailable(usedMap, "date_ideas", idea);
+              return (
+                <div key={i} style={{ background: "#fff", border: `1px solid ${used ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.22)"}`, borderRadius: "14px", marginBottom: "10px", overflow: "hidden", opacity: used ? 0.45 : 1, transition: "all 0.3s ease" }}>
+                  <div style={{ height: "2px", background: used ? "rgba(184,134,42,0.2)" : "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
+                  <div style={{ padding: "14px 16px" }}>
+                    <p style={{ margin: "0 0 12px 0", color: "#2c1a0e", fontSize: "14px", lineHeight: "1.6", fontFamily: "'DM Sans', sans-serif", fontWeight: "300" }}>
+                      {idea}
+                    </p>
+                    {!used ? (
+                      <button onClick={() => handleUse("date_ideas", idea)}
+                        style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase", boxShadow: "0 3px 10px rgba(184,134,42,0.35)" }}>
+                        Select
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: "12px", color: "#b8862a", fontFamily: "'DM Sans', sans-serif", opacity: 0.7 }}>
+                        Done · Returns in 180 days
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-            {BONUS_QUESTIONS.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "64px 24px" }}>
-                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "rgba(160,120,48,0.1)", border: "1px solid rgba(160,120,48,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: "20px" }}>✦</div>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "24px", fontWeight: "300", color: "#2c1a0e", margin: "0 0 10px" }}>More questions coming soon</p>
-                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "14px", color: "#8b6a4a", lineHeight: "1.6", margin: 0 }}>New bonus questions are added periodically. Check back for fresh ways to connect.</p>
-              </div>
-            ) : (
-              <>
-                <p style={{ margin: "0 0 20px 0", fontSize: "12px", color: "#a08060", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.03em" }}>
-                  {BONUS_QUESTIONS.filter(q => isAvailable(usedMap, "bonus", q)).length} of {BONUS_QUESTIONS.length} available
-                </p>
-                {BONUS_QUESTIONS.map((question, i) => {
-                  const used = !isAvailable(usedMap, "bonus", question);
-                  return (
-                    <div key={i} style={{ background: "#fff", border: `1px solid ${used ? "rgba(160,120,48,0.3)" : "rgba(139,90,43,0.12)"}`, borderRadius: "16px", padding: "20px 22px", marginBottom: "10px", opacity: used ? 0.5 : 1, transition: "all 0.3s ease" }}>
-                      <p style={{ margin: "0 0 14px 0", color: used ? "#c0a880" : "#2c1a0e", fontSize: "15px", lineHeight: "1.6", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>
-                        {question}
-                      </p>
-                      {!used ? (
-                        <button onClick={() => handleUse("bonus", question)}
-                          style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase", boxShadow: "0 3px 10px rgba(184,134,42,0.4)" }}>
-                          Select
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: "12px", color: "#a07830", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", opacity: 0.7 }}>
-                          Used · Returns in 180 days
+        {tab === "games" && !activeGame && (
+          <div style={{ animation: "fadeIn 0.4s ease" }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>Conversation Games</h2>
+              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Fun ways to connect with your partner, family and friends.</p>
+            </div>
+            {CONVERSATION_GAMES.map((game, i) => (
+              <div key={i} style={{ background: "#fff", border: "1px solid rgba(184,134,42,0.22)", borderRadius: "14px", marginBottom: "10px", overflow: "hidden" }}>
+                <div style={{ height: "2px", background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
+                <div style={{ padding: "16px" }}>
+                  <h3 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", fontWeight: "300", color: "#2c1a0e" }}>{game.title}</h3>
+                  <p style={{ margin: "0 0 10px 0", fontSize: "13px", color: "#8b6a4a", lineHeight: "1.5", fontFamily: "'DM Sans', sans-serif" }}>{game.description}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "12px" }}>
+                    {game.categories.map((catId, j) => {
+                      const cat = ALL_CATEGORIES.find(c => c.id === catId);
+                      return cat ? (
+                        <span key={j} style={{ background: "rgba(184,134,42,0.08)", border: "1px solid rgba(184,134,42,0.22)", borderRadius: "4px", fontSize: "10px", color: "#b8862a", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "2px 8px" }}>
+                          {cat.label}
                         </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </>
-            )}
+                      ) : null;
+                    })}
+                  </div>
+                  <button onClick={() => setActiveGame(game)}
+                    style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "9px 18px", cursor: "pointer", textTransform: "uppercase", boxShadow: "0 3px 10px rgba(184,134,42,0.35)" }}>
+                    ▶ Start This Game
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "games" && activeGame && (
+          <div style={{ animation: "fadeIn 0.3s ease" }}>
+            <button onClick={() => setActiveGame(null)} style={{ background: "#fff", border: "1px solid rgba(139,90,43,0.2)", borderRadius: "10px", color: "#8b6a4a", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
+              ← All Games
+            </button>
+            <div style={{ marginBottom: "24px" }}>
+              <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300", color: "#2c1a0e" }}>{activeGame.title}</h2>
+              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px" }}>{activeGame.description}</p>
+            </div>
+            {activeGame.categories.map(catId => {
+              const cat = ALL_CATEGORIES.find(c => c.id === catId);
+              if (!cat) return null;
+              const available = cat.questions.filter(q => isAvailable(usedMap, cat.id, q));
+              if (available.length === 0) return null;
+              return available.map((q, i) => (
+                <div key={`${catId}-${i}`} style={{ background: "#fff", border: "1px solid rgba(184,134,42,0.2)", borderRadius: "14px", marginBottom: "10px", overflow: "hidden" }}>
+                  <div style={{ height: "2px", background: `linear-gradient(90deg, ${cat.accent}, ${cat.accent}99)` }} />
+                  <div style={{ padding: "14px 16px" }}>
+                    <span style={{ color: cat.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", display: "block", marginBottom: "10px" }}>— {cat.label}</span>
+                    <p style={{ margin: "0 0 14px 0", fontSize: "15px", lineHeight: "1.65", color: "#2c1a0e", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{q}"</p>
+                    <button onClick={() => handleUse(cat.id, q)}
+                      style={{ background: `linear-gradient(135deg, ${cat.accent}, ${cat.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", cursor: "pointer", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", textTransform: "uppercase" }}>
+                      Select
+                    </button>
+                  </div>
+                </div>
+              ));
+            })}
           </div>
         )}
       </div>
