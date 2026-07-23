@@ -1956,7 +1956,7 @@ export default function App() {
             </button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginTop: "12px" }}>
-            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Conversation Games", icon: "🎲" }].map((t) => (
+            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Conversation Games", icon: "✦" }].map((t) => (
               <button key={t.id} onClick={() => { setTab(t.id); setSelectedCategory(null); setActiveGame(null); }}
                 style={{ background: tab === t.id ? "rgba(184,134,42,0.12)" : "transparent", border: `1px solid ${tab === t.id ? "rgba(184,134,42,0.45)" : "rgba(139,90,43,0.15)"}`, borderRadius: "8px", color: tab === t.id ? "#8a6220" : "#b0906a", cursor: "pointer", fontSize: "9px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.03em", padding: "8px 6px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
                 {t.icon} {t.label}
