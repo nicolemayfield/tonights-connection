@@ -1982,9 +1982,14 @@ export default function App() {
                 {dataLoading ? "Loading your history…" : `${totalAvailable} ready · ${totalUsed} answered`}
               </p>
             </div>
-            <button onClick={handleSignOut} style={{ background: "#fff", border: "1px solid rgba(139,90,43,0.22)", borderRadius: "8px", color: "#8b6a4a", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "6px 12px" }}>
-              Sign Out
-            </button>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button onClick={toggleDarkMode} style={{ background: dm ? "rgba(184,134,42,0.15)" : "rgba(184,134,42,0.1)", border: `1px solid ${dm ? "rgba(184,134,42,0.35)" : "rgba(184,134,42,0.3)"}`, borderRadius: "20px", color: dm ? "#d4a84e" : "#8a6220", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "5px 10px", transition: "all 0.2s ease" }}>
+                {dm ? "☀ Light" : "🌙 Dark"}
+              </button>
+              <button onClick={handleSignOut} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "8px", color: colors.signOutColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "6px 12px", transition: "all 0.2s ease" }}>
+                Sign Out
+              </button>
+            </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginTop: "12px" }}>
             {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Conversation Games", icon: "✦" }].map((t) => (
