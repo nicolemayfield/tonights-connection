@@ -1977,21 +1977,21 @@ export default function App() {
       {/* HEADER */}
       <div style={{ background: colors.headerBg, borderBottom: `1px solid ${colors.headerBorder}`, padding: "16px 20px", position: "sticky", top: 0, zIndex: 100, transition: "background 0.3s ease" }}>
         <div style={{ maxWidth: "640px", margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <h1 style={{ margin: 0, fontFamily: "'Monoton', cursive", fontSize: "15px", fontWeight: "400", color: colors.titleColor, letterSpacing: "0.02em", lineHeight: "1.3" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <h1 style={{ margin: 0, fontFamily: "'Monoton', cursive", fontSize: "12px", fontWeight: "400", color: colors.titleColor, letterSpacing: "0.01em", lineHeight: "1.3" }}>
                 Tonight's Connection
               </h1>
               <p style={{ margin: 0, fontSize: "11px", color: "#8b6a4a", letterSpacing: "0.04em" }}>
                 {dataLoading ? "Loading your history…" : `${totalAvailable} ready · ${totalUsed} answered`}
               </p>
             </div>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <button onClick={toggleDarkMode} style={{ background: dm ? "rgba(184,134,42,0.15)" : "rgba(184,134,42,0.1)", border: `1px solid ${dm ? "rgba(184,134,42,0.35)" : "rgba(184,134,42,0.3)"}`, borderRadius: "20px", color: dm ? "#d4a84e" : "#8a6220", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "5px 10px", transition: "all 0.2s ease" }}>
-                {dm ? "☀ Light" : "🌙 Dark"}
-              </button>
-              <button onClick={handleSignOut} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "8px", color: colors.signOutColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "6px 12px", transition: "all 0.2s ease" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "5px", flexShrink: 0 }}>
+              <button onClick={handleSignOut} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "8px", color: colors.signOutColor, cursor: "pointer", fontSize: "10px", fontFamily: "'DM Sans', sans-serif", padding: "4px 10px", whiteSpace: "nowrap" }}>
                 Sign Out
+              </button>
+              <button onClick={toggleDarkMode} style={{ background: dm ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.12)", border: "1px solid rgba(184,134,42,0.4)", borderRadius: "20px", color: dm ? "#d4a84e" : "#8a6220", cursor: "pointer", fontSize: "10px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", padding: "3px 10px", whiteSpace: "nowrap" }}>
+                {dm ? "☀ Light" : "🌙 Dark"}
               </button>
             </div>
           </div>
