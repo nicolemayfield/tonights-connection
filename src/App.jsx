@@ -15,14 +15,6 @@
 //      so upsert works correctly. Go to the table → Indexes → Add index, check "unique".
 //    - Go to Settings → API → copy your Project URL and anon/public key
 //
-// 1b. Create a second table named "favorites" (for the star/bookmark feature):
-//        id          (int8, primary key, auto-increment)
-//        user_id     (text, not null)
-//        category_id (text, not null)
-//        question    (text, not null)
-//        created_at  (timestamptz, default: now())
-//    - Add a UNIQUE constraint on (user_id, category_id, question), same as above.
-//
 // 2. In Vercel, set these Environment Variables (Settings → Environment Variables):
 //    VITE_SUPABASE_URL      = your Supabase project URL
 //    VITE_SUPABASE_ANON_KEY = your Supabase anon key
@@ -1703,7 +1695,7 @@ function AuthScreen() {
 }
 
 // ─── QUESTION CARD ────────────────────────────────────────────────────────────
-function QuestionCard({ question, category, onUse, isUsed, dm, favorited, onToggleFavorite, showLabel }) {
+function QuestionCard({ question, category, onUse, isUsed, dm, showLabel }) {
   const [justUsed, setJustUsed] = useState(false);
   const [localUsed, setLocalUsed] = useState(isUsed);
 
@@ -1717,17 +1709,11 @@ function QuestionCard({ question, category, onUse, isUsed, dm, favorited, onTogg
     <div style={{ background: dm ? "#231408" : "#fff", border: `1px solid ${localUsed ? category.accent + "40" : "rgba(184,134,42,0.18)"}`, borderRadius: "14px", marginBottom: "10px", opacity: localUsed && !justUsed ? 0.5 : 1, transition: "all 0.3s ease", overflow: "hidden" }}>
       <div style={{ height: "3px", background: localUsed && !justUsed ? "rgba(184,134,42,0.2)" : `linear-gradient(90deg, ${category.accent}, ${category.accent}99)` }} />
       <div style={{ padding: "16px 18px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: showLabel ? "10px" : "2px" }}>
-          {showLabel ? (
+        {showLabel && (
+          <div style={{ marginBottom: "10px" }}>
             <span style={{ color: category.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>— {category.label}</span>
-          ) : <span />}
-          {onToggleFavorite && (
-            <button onClick={onToggleFavorite} title={favorited ? "Remove from favorites" : "Save to favorites"}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: "0 2px", fontSize: "19px", lineHeight: 1, color: favorited ? category.accent : (dm ? "rgba(245,230,200,0.3)" : "rgba(139,90,43,0.3)"), flexShrink: 0 }}>
-              {favorited ? "★" : "☆"}
-            </button>
-          )}
-        </div>
+          </div>
+        )}
         <p style={{ margin: "0 0 14px 0", color: localUsed && !justUsed ? "#c0a880" : (dm ? "#f0d9b8" : "#2c1a0e"), fontSize: "15px", lineHeight: "1.6", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>
           {question}
         </p>
@@ -1747,7 +1733,7 @@ function QuestionCard({ question, category, onUse, isUsed, dm, favorited, onTogg
 }
 
 // ─── CATEGORY VIEW ────────────────────────────────────────────────────────────
-function CategoryView({ category, usedMap, onUse, onBack, dm, colors, favoritesMap, onToggleFavorite }) {
+function CategoryView({ category, usedMap, onUse, onBack, dm, colors }) {
   const [filter, setFilter] = useState("available");
   const available = category.questions.filter((q) => isAvailable(usedMap, category.id, q));
   const used = category.questions.filter((q) => !isAvailable(usedMap, category.id, q));
@@ -1775,13 +1761,9 @@ function CategoryView({ category, usedMap, onUse, onBack, dm, colors, favoritesM
         <div style={{ textAlign: "center", padding: "48px 24px", color: dm ? "#a4805a" : "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
           {filter === "available" ? "All questions in this category have been answered." : "No questions answered yet in this category."}
         </div>
-      ) : shown.map((q, i) => {
-        const key = `${category.id}::${q}`;
-        return (
-          <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} dm={dm}
-            favorited={!!favoritesMap[key]} onToggleFavorite={() => onToggleFavorite(category.id, q)} />
-        );
-      })}
+      ) : shown.map((q, i) => (
+        <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} dm={dm} />
+      ))}
     </div>
   );
 }
@@ -1902,13 +1884,11 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
   const [usedMap, setUsedMap] = useState({});
-  const [favoritesMap, setFavoritesMap] = useState({});
   const [dataLoading, setDataLoading] = useState(false);
   const [tab, setTab] = useState("daily");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [usedToast, setUsedToast] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [surpriseQuestion, setSurpriseQuestion] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
@@ -1997,19 +1977,6 @@ export default function App() {
       });
   }, [session]);
 
-  // Load favorites from Supabase
-  useEffect(() => {
-    if (!session) { setFavoritesMap({}); return; }
-    supabase.from("favorites").select("category_id, question").eq("user_id", session.user.id)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          const map = {};
-          data.forEach(({ category_id, question }) => { map[`${category_id}::${question}`] = true; });
-          setFavoritesMap(map);
-        }
-      });
-  }, [session]);
-
   // Mark a question used
   const handleUse = useCallback(async (categoryId, question) => {
     if (!session) return;
@@ -2024,55 +1991,12 @@ export default function App() {
     );
   }, [session]);
 
-  // Toggle a favorite/bookmark on or off
-  const handleToggleFavorite = useCallback(async (categoryId, question) => {
-    if (!session) return;
-    const key = `${categoryId}::${question}`;
-    const isFav = !!favoritesMap[key];
-    setFavoritesMap((prev) => {
-      const next = { ...prev };
-      if (isFav) delete next[key]; else next[key] = true;
-      return next;
-    });
-    if (isFav) {
-      await supabase.from("favorites").delete().match({ user_id: session.user.id, category_id: categoryId, question });
-    } else {
-      await supabase.from("favorites").upsert(
-        { user_id: session.user.id, category_id: categoryId, question, created_at: new Date().toISOString() },
-        { onConflict: "user_id,category_id,question" }
-      );
-    }
-  }, [session, favoritesMap]);
-
   const handleSignOut = async () => await supabase.auth.signOut();
 
   const totalAvailable = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => isAvailable(usedMap, cat.id, q)).length, 0);
   const totalUsed = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => !isAvailable(usedMap, cat.id, q)).length, 0);
   const dailyQuestions = ALL_CATEGORIES.map((cat) => ({ category: cat, question: getDailyQuestion(cat.id, cat.questions, usedMap) })).filter((d) => d.question !== null);
   const streak = computeStreak(usedMap);
-
-  const favoritesList = Object.keys(favoritesMap).reduce((list, key) => {
-    const sep = key.indexOf("::");
-    const categoryId = key.slice(0, sep);
-    const question = key.slice(sep + 2);
-    const cat = ALL_CATEGORIES.find((c) => c.id === categoryId);
-    if (cat) list.push({ category: cat, question });
-    return list;
-  }, []);
-
-  const searchResults = searchQuery.trim().length < 2 ? [] : (() => {
-    const q = searchQuery.trim().toLowerCase();
-    const out = [];
-    for (const cat of ALL_CATEGORIES) {
-      for (const question of cat.questions) {
-        if (question.toLowerCase().includes(q)) {
-          out.push({ category: cat, question });
-          if (out.length >= 100) return out;
-        }
-      }
-    }
-    return out;
-  })();
 
   const handleSurpriseMe = () => setSurpriseQuestion(pickRandomAvailable(usedMap));
 
@@ -2123,8 +2047,8 @@ export default function App() {
               </button>
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "5px", marginTop: "12px" }}>
-            {[{ id: "daily", label: "Daily", icon: "✦" }, { id: "browse", label: "Browse", icon: "⊞" }, { id: "favorites", label: "Favorites", icon: "★" }, { id: "search", label: "Search", icon: "⌕" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Games", icon: "✦" }].map((t) => (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginTop: "12px" }}>
+            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Conversation Games", icon: "✦" }].map((t) => (
               <button key={t.id} onClick={() => { setTab(t.id); setSelectedCategory(null); setActiveGame(null); }}
                 style={{ background: tab === t.id ? colors.tabActiveBg : colors.tabInactiveBg, border: `1px solid ${tab === t.id ? colors.tabActiveBorder : colors.tabInactiveBorder}`, borderRadius: "8px", color: tab === t.id ? colors.tabActiveColor : colors.tabInactiveColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.02em", padding: "9px 6px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
                 {t.icon} {t.label}
@@ -2159,81 +2083,22 @@ export default function App() {
             {surpriseQuestion && (
               <div style={{ marginBottom: "20px" }}>
                 <QuestionCard question={surpriseQuestion.question} category={surpriseQuestion.category} isUsed={!isAvailable(usedMap, surpriseQuestion.category.id, surpriseQuestion.question)}
-                  onUse={(q) => handleUse(surpriseQuestion.category.id, q)} dm={dm} showLabel
-                  favorited={!!favoritesMap[`${surpriseQuestion.category.id}::${surpriseQuestion.question}`]} onToggleFavorite={() => handleToggleFavorite(surpriseQuestion.category.id, surpriseQuestion.question)} />
+                  onUse={(q) => handleUse(surpriseQuestion.category.id, q)} dm={dm} showLabel />
                 <button onClick={handleSurpriseMe} style={{ background: "none", border: `1px solid ${dm ? "rgba(245,230,200,0.2)" : "rgba(139,90,43,0.2)"}`, borderRadius: "8px", color: colors.subColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "7px 14px" }}>
                   Shuffle Again
                 </button>
               </div>
             )}
 
-            {dailyQuestions.map(({ category, question }) => {
-              const key = `${category.id}::${question}`;
-              return (
-                <QuestionCard key={category.id} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
-                  onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel
-                  favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(category.id, question)} />
-              );
-            })}
+            {dailyQuestions.map(({ category, question }) => (
+              <QuestionCard key={category.id} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
+                onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel />
+            ))}
             {dailyQuestions.length === 0 && (
               <div style={{ textAlign: "center", padding: "64px 24px", color: "#b0906a" }}>
                 <div style={{ fontSize: "28px", marginBottom: "16px", color: "#b8862a", fontFamily: "'Cormorant Garamond', serif" }}>✦</div>
                 <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "18px", color: colors.subColor }}>All questions have been answered. They'll return over the next 180 days.</p>
               </div>
-            )}
-          </div>
-        )}
-
-        {tab === "favorites" && (
-          <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <div style={{ marginBottom: "24px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Favorites</h2>
-              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Questions you've starred, across every category.</p>
-            </div>
-            {favoritesList.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "64px 24px", color: colors.subColor }}>
-                <div style={{ fontSize: "40px", marginBottom: "16px" }}>☆</div>
-                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "16px" }}>Tap the star on any question to save it here.</p>
-              </div>
-            ) : favoritesList.map(({ category, question }, i) => {
-              const key = `${category.id}::${question}`;
-              return (
-                <QuestionCard key={i} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
-                  onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel
-                  favorited={true} onToggleFavorite={() => handleToggleFavorite(category.id, question)} />
-              );
-            })}
-          </div>
-        )}
-
-        {tab === "search" && (
-          <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <div style={{ marginBottom: "20px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Search</h2>
-              <p style={{ margin: "0 0 16px 0", color: colors.subColor, fontSize: "14px" }}>Find a question across all {TOTAL_QUESTION_COUNT.toLocaleString()}, by keyword.</p>
-              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Try “childhood” or “trust”…"
-                style={{ width: "100%", background: dm ? "#231408" : "#faf6f0", border: "1px solid rgba(139,90,43,0.25)", borderRadius: "12px", color: colors.titleColor, fontSize: "15px", fontFamily: "'DM Sans', sans-serif", padding: "14px 16px", outline: "none", boxSizing: "border-box" }} />
-            </div>
-            {searchQuery.trim().length < 2 ? (
-              <div style={{ textAlign: "center", padding: "48px 24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic" }}>
-                Type at least 2 characters to search.
-              </div>
-            ) : searchResults.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "48px 24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic" }}>
-                No questions match "{searchQuery}".
-              </div>
-            ) : (
-              <>
-                <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: colors.subColor, fontFamily: "'DM Sans', sans-serif" }}>{searchResults.length} match{searchResults.length === 1 ? "" : "es"}</p>
-                {searchResults.map(({ category, question }, i) => {
-                  const key = `${category.id}::${question}`;
-                  return (
-                    <QuestionCard key={i} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
-                      onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel
-                      favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(category.id, question)} />
-                  );
-                })}
-              </>
             )}
           </div>
         )}
@@ -2267,8 +2132,7 @@ export default function App() {
         )}
 
         {tab === "browse" && selectedCategory && (
-          <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} dm={dm} colors={colors}
-            favoritesMap={favoritesMap} onToggleFavorite={handleToggleFavorite} />
+          <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} dm={dm} colors={colors} />
         )}
 
         {tab === "dateIdeas" && (
@@ -2352,14 +2216,10 @@ export default function App() {
               if (!cat) return null;
               const available = cat.questions.filter(q => isAvailable(usedMap, cat.id, q));
               if (available.length === 0) return null;
-              return available.map((q, i) => {
-                const key = `${cat.id}::${q}`;
-                return (
-                  <QuestionCard key={`${catId}-${i}`} question={q} category={cat} isUsed={false}
-                    onUse={(question) => handleUse(cat.id, question)} dm={dm} showLabel
-                    favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(cat.id, q)} />
-                );
-              });
+              return available.map((q, i) => (
+                <QuestionCard key={`${catId}-${i}`} question={q} category={cat} isUsed={false}
+                  onUse={(question) => handleUse(cat.id, question)} dm={dm} showLabel />
+              ));
             })}
           </div>
         )}
