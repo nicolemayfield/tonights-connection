@@ -1844,13 +1844,17 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [usedToast, setUsedToast] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
-  const [darkMode, setDarkMode] = useState(() => {
-    try { return localStorage.getItem("tc_dark_mode") === "true"; } catch { return false; }
-  });
+  const [darkMode, setDarkMode] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("tc_dark_mode");
+      if (saved === "true") setDarkMode(true);
+    } catch {}
+  }, []);
   const toggleDarkMode = () => {
     setDarkMode(prev => {
       const next = !prev;
-      try { localStorage.setItem("tc_dark_mode", next); } catch {}
+      try { localStorage.setItem("tc_dark_mode", String(next)); } catch {}
       return next;
     });
   };
