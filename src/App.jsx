@@ -1634,7 +1634,7 @@ function AuthScreen() {
           <div style={{ position: "relative", marginBottom: "12px" }}>
             <input type={showPassword ? "text" : "password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ ...inputStyle, marginBottom: 0, paddingRight: "44px" }} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
             <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#b8862a", fontSize: "16px", padding: "0", lineHeight: 1 }}>
-              {showPassword ? "🙈" : "👁"}
+              {showPassword ? (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>) : (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>)}
             </button>
           </div>
 
@@ -1667,10 +1667,10 @@ function QuestionCard({ question, category, onUse, isUsed }) {
   };
 
   return (
-    <div style={{ background: "#fff", border: `1px solid ${localUsed ? category.accent + "40" : "rgba(184,134,42,0.18)"}`, borderRadius: "14px", marginBottom: "10px", opacity: localUsed && !justUsed ? 0.5 : 1, transition: "all 0.3s ease", overflow: "hidden" }}>
+    <div style={{ background: dm ? "#231408" : "#fff", border: `1px solid ${localUsed ? category.accent + "40" : "rgba(184,134,42,0.18)"}`, borderRadius: "14px", marginBottom: "10px", opacity: localUsed && !justUsed ? 0.5 : 1, transition: "all 0.3s ease", overflow: "hidden" }}>
       <div style={{ height: "3px", background: localUsed && !justUsed ? "rgba(184,134,42,0.2)" : `linear-gradient(90deg, ${category.accent}, ${category.accent}99)` }} />
       <div style={{ padding: "16px 18px" }}>
-        <p style={{ margin: "0 0 14px 0", color: localUsed && !justUsed ? "#c0a880" : "#2c1a0e", fontSize: "15px", lineHeight: "1.6", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>
+        <p style={{ margin: "0 0 14px 0", color: localUsed && !justUsed ? "#c0a880" : (dm ? "#f0d9b8" : "#2c1a0e"), fontSize: "15px", lineHeight: "1.6", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>
           {question}
         </p>
         {!localUsed ? (
@@ -1794,7 +1794,7 @@ function PasswordSetup({ onComplete }) {
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           />
           <button onClick={() => setShowPassword(!showPassword)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#b8862a", fontSize: "16px", padding: "0", lineHeight: 1 }}>
-            {showPassword ? "🙈" : "👁"}
+            {showPassword ? (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>) : (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>)}
           </button>
         </div>
         <div style={{ position: "relative", marginBottom: "12px" }}>
@@ -1807,7 +1807,7 @@ function PasswordSetup({ onComplete }) {
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           />
           <button onClick={() => setShowConfirm(!showConfirm)} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#b8862a", fontSize: "16px", padding: "0", lineHeight: 1 }}>
-            {showConfirm ? "🙈" : "👁"}
+            {showConfirm ? (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>) : (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>)}
           </button>
         </div>
 
@@ -1844,6 +1844,37 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [usedToast, setUsedToast] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    try { return localStorage.getItem("tc_dark_mode") === "true"; } catch { return false; }
+  });
+  const toggleDarkMode = () => {
+    setDarkMode(prev => {
+      const next = !prev;
+      try { localStorage.setItem("tc_dark_mode", next); } catch {}
+      return next;
+    });
+  };
+  const dm = darkMode;
+  const colors = {
+    bg: dm ? "#1a0c04" : "#ffffff",
+    headerBg: dm ? "#1a0c04" : "#ffffff",
+    headerBorder: dm ? "rgba(184,134,42,0.15)" : "rgba(184,134,42,0.2)",
+    cardBg: dm ? "#231408" : "#ffffff",
+    cardBorder: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.2)",
+    titleColor: dm ? "#f5e6c8" : "#2c1a0e",
+    subColor: dm ? "#7a5a38" : "#8b6a4a",
+    questionText: dm ? "#f0d9b8" : "#2c1a0e",
+    tabActiveBg: dm ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.12)",
+    tabActiveBorder: dm ? "rgba(184,134,42,0.55)" : "rgba(184,134,42,0.45)",
+    tabActiveColor: dm ? "#d4a84e" : "#8a6220",
+    tabInactiveBg: dm ? "rgba(245,230,200,0.04)" : "transparent",
+    tabInactiveBorder: dm ? "rgba(245,230,200,0.15)" : "rgba(139,90,43,0.15)",
+    tabInactiveColor: dm ? "#e8c898" : "#b0906a",
+    signOutBg: dm ? "rgba(255,255,255,0.06)" : "#ffffff",
+    signOutBorder: dm ? "rgba(184,134,42,0.22)" : "rgba(139,90,43,0.22)",
+    signOutColor: dm ? "#b8862a" : "#8b6a4a",
+    btnColor: "#fff",
+  };
 
   // Listen for auth state
   useEffect(() => {
@@ -1929,7 +1960,7 @@ export default function App() {
   if (!session) return <AuthScreen />;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#ffffff", fontFamily: "'DM Sans', sans-serif", color: "#2c1a0e", overscrollBehavior: "none" }}>
+    <div style={{ minHeight: "100vh", background: colors.bg, fontFamily: "'DM Sans', sans-serif", color: colors.titleColor, overscrollBehavior: "none", transition: "background 0.3s ease" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:wght@300;400&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
@@ -1940,11 +1971,11 @@ export default function App() {
       `}</style>
 
       {/* HEADER */}
-      <div style={{ background: "#ffffff", borderBottom: "1px solid rgba(184,134,42,0.2)", padding: "16px 20px", position: "sticky", top: 0, zIndex: 100 }}>
+      <div style={{ background: colors.headerBg, borderBottom: `1px solid ${colors.headerBorder}`, padding: "16px 20px", position: "sticky", top: 0, zIndex: 100, transition: "background 0.3s ease" }}>
         <div style={{ maxWidth: "640px", margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h1 style={{ margin: 0, fontFamily: "'Monoton', cursive", fontSize: "15px", fontWeight: "400", color: "#2c1a0e", letterSpacing: "0.02em", lineHeight: "1.3" }}>
+              <h1 style={{ margin: 0, fontFamily: "'Monoton', cursive", fontSize: "15px", fontWeight: "400", color: colors.titleColor, letterSpacing: "0.02em", lineHeight: "1.3" }}>
                 Tonight's Connection
               </h1>
               <p style={{ margin: 0, fontSize: "11px", color: "#8b6a4a", letterSpacing: "0.04em" }}>
@@ -1958,7 +1989,7 @@ export default function App() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginTop: "12px" }}>
             {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Conversation Games", icon: "✦" }].map((t) => (
               <button key={t.id} onClick={() => { setTab(t.id); setSelectedCategory(null); setActiveGame(null); }}
-                style={{ background: tab === t.id ? "rgba(184,134,42,0.12)" : "transparent", border: `1px solid ${tab === t.id ? "rgba(184,134,42,0.45)" : "rgba(139,90,43,0.15)"}`, borderRadius: "8px", color: tab === t.id ? "#8a6220" : "#b0906a", cursor: "pointer", fontSize: "9px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.03em", padding: "8px 6px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
+                style={{ background: tab === t.id ? colors.tabActiveBg : colors.tabInactiveBg, border: `1px solid ${tab === t.id ? colors.tabActiveBorder : colors.tabInactiveBorder}`, borderRadius: "8px", color: tab === t.id ? colors.tabActiveColor : colors.tabInactiveColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.02em", padding: "9px 6px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
                 {t.icon} {t.label}
               </button>
             ))}
@@ -1979,17 +2010,17 @@ export default function App() {
         {tab === "daily" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>Tonight's Questions</h2>
-              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Tonight's Questions</h2>
+              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
             </div>
             {dailyQuestions.map(({ category, question }) => (
-              <div key={category.id} style={{ background: "#fff", border: `1px solid ${category.accent}30`, borderRadius: "16px", marginBottom: "14px", boxShadow: "0 2px 12px rgba(139,90,43,0.08)", overflow: "hidden" }}>
+              <div key={category.id} style={{ background: colors.cardBg, border: `1px solid ${category.accent}30`, borderRadius: "16px", marginBottom: "14px", boxShadow: dm ? "none" : "0 2px 12px rgba(139,90,43,0.08)", overflow: "hidden" }}>
                 <div style={{ height: "3px", background: `linear-gradient(90deg, ${category.accent}, ${category.accent}99, ${category.accent})` }} />
                 <div style={{ padding: "18px 20px" }}>
                   <div style={{ marginBottom: "12px" }}>
                     <span style={{ color: category.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>— {category.label}</span>
                   </div>
-                  <p style={{ margin: "0 0 16px 0", fontSize: "16px", lineHeight: "1.65", color: "#2c1a0e", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{question}"</p>
+                  <p style={{ margin: "0 0 16px 0", fontSize: "16px", lineHeight: "1.65", color: colors.questionText, fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{question}"</p>
                   <button onClick={() => handleUse(category.id, question)}
                     style={{ background: `linear-gradient(135deg, ${category.accent}, ${category.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", cursor: "pointer", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "9px 18px", textTransform: "uppercase", boxShadow: `0 3px 10px ${category.accent}44` }}>
                     Select
@@ -2009,8 +2040,8 @@ export default function App() {
         {tab === "browse" && !selectedCategory && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>35 Categories</h2>
-              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Browse all 994 questions by topic.</p>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>35 Categories</h2>
+              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Browse all 994 questions by topic.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
               {ALL_CATEGORIES.map((cat) => {
@@ -2041,8 +2072,8 @@ export default function App() {
         {tab === "dateIdeas" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "24px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>Date Ideas</h2>
-              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Select one when you've done it — it returns in 180 days so you can enjoy it again.</p>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Date Ideas</h2>
+              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Select one when you've done it — it returns in 180 days so you can enjoy it again.</p>
             </div>
             <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "#a08060", fontFamily: "'DM Sans', sans-serif" }}>
               {DATE_IDEAS.filter(d => isAvailable(usedMap, "date_ideas", d)).length} of {DATE_IDEAS.length} available
@@ -2050,10 +2081,10 @@ export default function App() {
             {DATE_IDEAS.map((idea, i) => {
               const used = !isAvailable(usedMap, "date_ideas", idea);
               return (
-                <div key={i} style={{ background: "#fff", border: `1px solid ${used ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.22)"}`, borderRadius: "14px", marginBottom: "10px", overflow: "hidden", opacity: used ? 0.45 : 1, transition: "all 0.3s ease" }}>
+                <div key={i} style={{ background: dm ? "#231408" : "#fff", border: `1px solid ${used ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.22)"}`, borderRadius: "14px", marginBottom: "10px", overflow: "hidden", opacity: used ? 0.45 : 1, transition: "all 0.3s ease" }}>
                   <div style={{ height: "2px", background: used ? "rgba(184,134,42,0.2)" : "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
                   <div style={{ padding: "14px 16px" }}>
-                    <p style={{ margin: "0 0 12px 0", color: "#2c1a0e", fontSize: "14px", lineHeight: "1.6", fontFamily: "'DM Sans', sans-serif", fontWeight: "300" }}>
+                    <p style={{ margin: "0 0 12px 0", color: dm ? "#f0d9b8" : "#2c1a0e", fontSize: "14px", lineHeight: "1.6", fontFamily: "'DM Sans', sans-serif", fontWeight: "300" }}>
                       {idea}
                     </p>
                     {!used ? (
@@ -2076,15 +2107,15 @@ export default function App() {
         {tab === "games" && !activeGame && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "24px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: "#2c1a0e" }}>Conversation Games</h2>
-              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "14px" }}>Fun ways to connect with your partner, family and friends.</p>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Conversation Games</h2>
+              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Fun ways to connect with your partner, family and friends.</p>
             </div>
             {CONVERSATION_GAMES.map((game, i) => (
-              <div key={i} style={{ background: "#fff", border: "1px solid rgba(184,134,42,0.22)", borderRadius: "14px", marginBottom: "10px", overflow: "hidden" }}>
+              <div key={i} style={{ background: dm ? "#231408" : "#fff", border: "1px solid rgba(184,134,42,0.22)", borderRadius: "14px", marginBottom: "10px", overflow: "hidden" }}>
                 <div style={{ height: "2px", background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
                 <div style={{ padding: "16px" }}>
-                  <h3 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", fontWeight: "300", color: "#2c1a0e" }}>{game.title}</h3>
-                  <p style={{ margin: "0 0 10px 0", fontSize: "13px", color: "#8b6a4a", lineHeight: "1.5", fontFamily: "'DM Sans', sans-serif" }}>{game.description}</p>
+                  <h3 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", fontWeight: "300", color: colors.titleColor }}>{game.title}</h3>
+                  <p style={{ margin: "0 0 10px 0", fontSize: "13px", color: colors.subColor, lineHeight: "1.5", fontFamily: "'DM Sans', sans-serif" }}>{game.description}</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "12px" }}>
                     {game.categories.map((catId, j) => {
                       const cat = ALL_CATEGORIES.find(c => c.id === catId);
