@@ -1758,7 +1758,7 @@ function QuestionCard({ question, category, onUse, isUsed, dm, favorited, onTogg
 
         {!showNote && note && (
           <div onClick={() => setShowNote(true)} style={{ cursor: "pointer", background: dm ? "rgba(184,134,42,0.1)" : "rgba(184,134,42,0.06)", border: "1px solid rgba(184,134,42,0.18)", borderRadius: "8px", padding: "8px 10px", marginBottom: "12px", fontSize: "12px", color: mutedText, fontFamily: "'DM Sans', sans-serif" }}>
-            📝 {note.length > 90 ? note.slice(0, 90) + "…" : note}
+            <span style={{ fontStyle: "italic", fontFamily: "'Lora', serif" }}>Note</span> — {note.length > 90 ? note.slice(0, 90) + "…" : note}
           </div>
         )}
 
@@ -1769,7 +1769,7 @@ function QuestionCard({ question, category, onUse, isUsed, dm, favorited, onTogg
             </button>
           ) : (
             <span style={{ fontSize: "12px", color: category.accent, fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", opacity: 0.7 }}>
-              {justUsed ? "✨ Answered — returns in 180 days" : "Answered · Returns in 180 days"}
+              {justUsed ? "Answered — returns in 180 days" : "Answered · Returns in 180 days"}
             </span>
           )}
           {onSaveNote && !showNote && (
@@ -2179,7 +2179,10 @@ export default function App() {
                 Tonight's Connection
               </h1>
               <p style={{ margin: 0, fontSize: "11px", color: colors.subColor, letterSpacing: "0.04em" }}>
-                {dataLoading ? "Loading your history…" : `${totalAvailable} ready · ${totalUsed} answered${streak > 0 ? ` · 🔥 ${streak} day streak` : ""}`}
+                {dataLoading ? "Loading your history…" : `${totalAvailable} ready · ${totalUsed} answered`}
+                {!dataLoading && streak > 0 && (
+                  <span style={{ color: "#b8862a", fontWeight: "700" }}> · {streak}-day streak</span>
+                )}
               </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "5px", flexShrink: 0 }}>
@@ -2187,12 +2190,12 @@ export default function App() {
                 Sign Out
               </button>
               <button onClick={toggleDarkMode} style={{ background: dm ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.12)", border: "1px solid rgba(184,134,42,0.4)", borderRadius: "20px", color: dm ? "#d4a84e" : "#8a6220", cursor: "pointer", fontSize: "10px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", padding: "3px 10px", whiteSpace: "nowrap" }}>
-                {dm ? "☀ Light" : "🌙 Dark"}
+                {dm ? "Light" : "Dark"}
               </button>
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "5px", marginTop: "12px" }}>
-            {[{ id: "daily", label: "Daily", icon: "✦" }, { id: "browse", label: "Browse", icon: "⊞" }, { id: "favorites", label: "Favorites", icon: "★" }, { id: "search", label: "Search", icon: "🔍" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Games", icon: "✦" }].map((t) => (
+            {[{ id: "daily", label: "Daily", icon: "✦" }, { id: "browse", label: "Browse", icon: "⊞" }, { id: "favorites", label: "Favorites", icon: "★" }, { id: "search", label: "Search", icon: "⌕" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Games", icon: "✦" }].map((t) => (
               <button key={t.id} onClick={() => { setTab(t.id); setSelectedCategory(null); setActiveGame(null); }}
                 style={{ background: tab === t.id ? colors.tabActiveBg : colors.tabInactiveBg, border: `1px solid ${tab === t.id ? colors.tabActiveBorder : colors.tabInactiveBorder}`, borderRadius: "8px", color: tab === t.id ? colors.tabActiveColor : colors.tabInactiveColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.02em", padding: "9px 6px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
                 {t.icon} {t.label}
@@ -2205,7 +2208,7 @@ export default function App() {
       {/* TOAST */}
       {usedToast && (
         <div style={{ position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", background: "#a07830", color: "#fff", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: "600", zIndex: 999, maxWidth: "320px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.4)", animation: "fadeIn 0.3s ease" }}>
-          ✨ Saved to your account — returns in 180 days
+          Saved to your account — returns in 180 days
         </div>
       )}
 
@@ -2220,7 +2223,7 @@ export default function App() {
                 <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
               </div>
               <button onClick={handleSurpriseMe} style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", padding: "10px 16px", whiteSpace: "nowrap", boxShadow: "0 3px 12px rgba(184,134,42,0.35)" }}>
-                🎲 Surprise Me
+                Surprise Me
               </button>
             </div>
 
@@ -2231,7 +2234,7 @@ export default function App() {
                   favorited={!!favoritesMap[`${surpriseQuestion.category.id}::${surpriseQuestion.question}`]} onToggleFavorite={() => handleToggleFavorite(surpriseQuestion.category.id, surpriseQuestion.question)}
                   note={notesMap[`${surpriseQuestion.category.id}::${surpriseQuestion.question}`]} onSaveNote={(text) => handleSaveNote(surpriseQuestion.category.id, surpriseQuestion.question, text)} />
                 <button onClick={handleSurpriseMe} style={{ background: "none", border: `1px solid ${dm ? "rgba(245,230,200,0.2)" : "rgba(139,90,43,0.2)"}`, borderRadius: "8px", color: colors.subColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "7px 14px" }}>
-                  🔀 Shuffle Again
+                  Shuffle Again
                 </button>
               </div>
             )}
@@ -2247,7 +2250,7 @@ export default function App() {
             })}
             {dailyQuestions.length === 0 && (
               <div style={{ textAlign: "center", padding: "64px 24px", color: "#b0906a" }}>
-                <div style={{ fontSize: "48px", marginBottom: "16px" }}>🌙</div>
+                <div style={{ fontSize: "28px", marginBottom: "16px", color: "#b8862a", fontFamily: "'Cormorant Garamond', serif" }}>✦</div>
                 <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "18px", color: colors.subColor }}>All questions have been answered. They'll return over the next 180 days.</p>
               </div>
             )}
