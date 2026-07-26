@@ -15,21 +15,12 @@
 //      so upsert works correctly. Go to the table → Indexes → Add index, check "unique".
 //    - Go to Settings → API → copy your Project URL and anon/public key
 //
-// 1b. NEW — create a second table named "favorites" (for the star/bookmark feature):
+// 1b. Create a second table named "favorites" (for the star/bookmark feature):
 //        id          (int8, primary key, auto-increment)
 //        user_id     (text, not null)
 //        category_id (text, not null)
 //        question    (text, not null)
 //        created_at  (timestamptz, default: now())
-//    - Add a UNIQUE constraint on (user_id, category_id, question), same as above.
-//
-// 1c. NEW — create a third table named "question_notes" (for the per-question notes feature):
-//        id          (int8, primary key, auto-increment)
-//        user_id     (text, not null)
-//        category_id (text, not null)
-//        question    (text, not null)
-//        note        (text, not null)
-//        updated_at  (timestamptz, default: now())
 //    - Add a UNIQUE constraint on (user_id, category_id, question), same as above.
 //
 // 2. In Vercel, set these Environment Variables (Settings → Environment Variables):
@@ -63,7 +54,7 @@ const supabase = createClient(
 
 const COOLDOWN_DAYS = 180;
 
-// ─── ALL 994 QUESTIONS ────────────────────────────────────────────────────────
+// ─── ALL QUESTIONS (grows over time — see TOTAL_QUESTION_COUNT below) ─────────
 const ALL_CATEGORIES = [
   {
     id: "deep", label: "Deep", color: "#fffaf4", accent: "#a07830",
@@ -1315,6 +1306,13 @@ const ALL_CATEGORIES = [
   },
 ];
 
+// These are derived automatically from ALL_CATEGORIES above — never hardcode
+// question/category counts anywhere else in the UI. When you add a new
+// category or new bonus questions, these two numbers update themselves,
+// and everywhere they're used (Browse tab, Search tab) stays accurate.
+const TOTAL_CATEGORY_COUNT = ALL_CATEGORIES.length;
+const TOTAL_QUESTION_COUNT = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.length, 0);
+
 // ─── BONUS QUESTIONS ──────────────────────────────────────────────────────────
 // Add new bonus questions here when you have them ready.
 // They will automatically appear in the Bonus Questions tab for all users.
@@ -1705,26 +1703,15 @@ function AuthScreen() {
 }
 
 // ─── QUESTION CARD ────────────────────────────────────────────────────────────
-function QuestionCard({ question, category, onUse, isUsed, dm, favorited, onToggleFavorite, note, onSaveNote, showLabel }) {
+function QuestionCard({ question, category, onUse, isUsed, dm, favorited, onToggleFavorite, showLabel }) {
   const [justUsed, setJustUsed] = useState(false);
   const [localUsed, setLocalUsed] = useState(isUsed);
-  const [showNote, setShowNote] = useState(false);
-  const [noteText, setNoteText] = useState(note || "");
-
-  useEffect(() => { setNoteText(note || ""); }, [note]);
 
   const handleUse = () => {
     setLocalUsed(true); setJustUsed(true);
     onUse(question);
     setTimeout(() => setJustUsed(false), 2500);
   };
-
-  const handleSaveNote = () => {
-    onSaveNote(noteText);
-    setShowNote(false);
-  };
-
-  const mutedText = dm ? "#c4a074" : "#8b6a4a";
 
   return (
     <div style={{ background: dm ? "#231408" : "#fff", border: `1px solid ${localUsed ? category.accent + "40" : "rgba(184,134,42,0.18)"}`, borderRadius: "14px", marginBottom: "10px", opacity: localUsed && !justUsed ? 0.5 : 1, transition: "all 0.3s ease", overflow: "hidden" }}>
@@ -1745,46 +1732,22 @@ function QuestionCard({ question, category, onUse, isUsed, dm, favorited, onTogg
           {question}
         </p>
 
-        {showNote && (
-          <div style={{ marginBottom: "12px" }}>
-            <textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="Jot down their answer or a memory from this one…"
-              style={{ width: "100%", minHeight: "70px", background: dm ? "#1a0c04" : "#faf6f0", border: "1px solid rgba(184,134,42,0.25)", borderRadius: "8px", color: dm ? "#f0d9b8" : "#2c1a0e", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "10px", outline: "none", boxSizing: "border-box", resize: "vertical" }} />
-            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-              <button onClick={handleSaveNote} style={{ background: category.accent, border: "none", borderRadius: "6px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", padding: "6px 12px", cursor: "pointer" }}>Save Note</button>
-              <button onClick={() => { setShowNote(false); setNoteText(note || ""); }} style={{ background: "none", border: `1px solid ${dm ? "rgba(245,230,200,0.2)" : "rgba(139,90,43,0.2)"}`, borderRadius: "6px", color: mutedText, fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "6px 12px", cursor: "pointer" }}>Cancel</button>
-            </div>
-          </div>
+        {!localUsed ? (
+          <button onClick={handleUse} style={{ background: `linear-gradient(135deg, ${category.accent}, ${category.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase", boxShadow: `0 3px 10px ${category.accent}44` }}>
+            Select
+          </button>
+        ) : (
+          <span style={{ fontSize: "12px", color: category.accent, fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", opacity: 0.7 }}>
+            {justUsed ? "Answered — returns in 180 days" : "Answered · Returns in 180 days"}
+          </span>
         )}
-
-        {!showNote && note && (
-          <div onClick={() => setShowNote(true)} style={{ cursor: "pointer", background: dm ? "rgba(184,134,42,0.1)" : "rgba(184,134,42,0.06)", border: "1px solid rgba(184,134,42,0.18)", borderRadius: "8px", padding: "8px 10px", marginBottom: "12px", fontSize: "12px", color: mutedText, fontFamily: "'DM Sans', sans-serif" }}>
-            <span style={{ fontStyle: "italic", fontFamily: "'Lora', serif" }}>Note</span> — {note.length > 90 ? note.slice(0, 90) + "…" : note}
-          </div>
-        )}
-
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
-          {!localUsed ? (
-            <button onClick={handleUse} style={{ background: `linear-gradient(135deg, ${category.accent}, ${category.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase", boxShadow: `0 3px 10px ${category.accent}44` }}>
-              Select
-            </button>
-          ) : (
-            <span style={{ fontSize: "12px", color: category.accent, fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", opacity: 0.7 }}>
-              {justUsed ? "Answered — returns in 180 days" : "Answered · Returns in 180 days"}
-            </span>
-          )}
-          {onSaveNote && !showNote && (
-            <button onClick={() => setShowNote(true)} style={{ background: "none", border: "none", color: mutedText, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", padding: 0 }}>
-              {note ? "Edit note" : "+ Add note"}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
 }
 
 // ─── CATEGORY VIEW ────────────────────────────────────────────────────────────
-function CategoryView({ category, usedMap, onUse, onBack, dm, colors, favoritesMap, onToggleFavorite, notesMap, onSaveNote }) {
+function CategoryView({ category, usedMap, onUse, onBack, dm, colors, favoritesMap, onToggleFavorite }) {
   const [filter, setFilter] = useState("available");
   const available = category.questions.filter((q) => isAvailable(usedMap, category.id, q));
   const used = category.questions.filter((q) => !isAvailable(usedMap, category.id, q));
@@ -1816,8 +1779,7 @@ function CategoryView({ category, usedMap, onUse, onBack, dm, colors, favoritesM
         const key = `${category.id}::${q}`;
         return (
           <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} dm={dm}
-            favorited={!!favoritesMap[key]} onToggleFavorite={() => onToggleFavorite(category.id, q)}
-            note={notesMap[key]} onSaveNote={(text) => onSaveNote(category.id, q, text)} />
+            favorited={!!favoritesMap[key]} onToggleFavorite={() => onToggleFavorite(category.id, q)} />
         );
       })}
     </div>
@@ -1941,7 +1903,6 @@ export default function App() {
   const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
   const [usedMap, setUsedMap] = useState({});
   const [favoritesMap, setFavoritesMap] = useState({});
-  const [notesMap, setNotesMap] = useState({});
   const [dataLoading, setDataLoading] = useState(false);
   const [tab, setTab] = useState("daily");
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -2049,19 +2010,6 @@ export default function App() {
       });
   }, [session]);
 
-  // Load notes from Supabase
-  useEffect(() => {
-    if (!session) { setNotesMap({}); return; }
-    supabase.from("question_notes").select("category_id, question, note").eq("user_id", session.user.id)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          const map = {};
-          data.forEach(({ category_id, question, note }) => { map[`${category_id}::${question}`] = note; });
-          setNotesMap(map);
-        }
-      });
-  }, [session]);
-
   // Mark a question used
   const handleUse = useCallback(async (categoryId, question) => {
     if (!session) return;
@@ -2095,25 +2043,6 @@ export default function App() {
       );
     }
   }, [session, favoritesMap]);
-
-  // Save (or clear) a note on a question
-  const handleSaveNote = useCallback(async (categoryId, question, note) => {
-    if (!session) return;
-    const key = `${categoryId}::${question}`;
-    setNotesMap((prev) => {
-      const next = { ...prev };
-      if (note && note.trim()) next[key] = note; else delete next[key];
-      return next;
-    });
-    if (note && note.trim()) {
-      await supabase.from("question_notes").upsert(
-        { user_id: session.user.id, category_id: categoryId, question, note, updated_at: new Date().toISOString() },
-        { onConflict: "user_id,category_id,question" }
-      );
-    } else {
-      await supabase.from("question_notes").delete().match({ user_id: session.user.id, category_id: categoryId, question });
-    }
-  }, [session]);
 
   const handleSignOut = async () => await supabase.auth.signOut();
 
@@ -2231,8 +2160,7 @@ export default function App() {
               <div style={{ marginBottom: "20px" }}>
                 <QuestionCard question={surpriseQuestion.question} category={surpriseQuestion.category} isUsed={!isAvailable(usedMap, surpriseQuestion.category.id, surpriseQuestion.question)}
                   onUse={(q) => handleUse(surpriseQuestion.category.id, q)} dm={dm} showLabel
-                  favorited={!!favoritesMap[`${surpriseQuestion.category.id}::${surpriseQuestion.question}`]} onToggleFavorite={() => handleToggleFavorite(surpriseQuestion.category.id, surpriseQuestion.question)}
-                  note={notesMap[`${surpriseQuestion.category.id}::${surpriseQuestion.question}`]} onSaveNote={(text) => handleSaveNote(surpriseQuestion.category.id, surpriseQuestion.question, text)} />
+                  favorited={!!favoritesMap[`${surpriseQuestion.category.id}::${surpriseQuestion.question}`]} onToggleFavorite={() => handleToggleFavorite(surpriseQuestion.category.id, surpriseQuestion.question)} />
                 <button onClick={handleSurpriseMe} style={{ background: "none", border: `1px solid ${dm ? "rgba(245,230,200,0.2)" : "rgba(139,90,43,0.2)"}`, borderRadius: "8px", color: colors.subColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "7px 14px" }}>
                   Shuffle Again
                 </button>
@@ -2244,8 +2172,7 @@ export default function App() {
               return (
                 <QuestionCard key={category.id} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
                   onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel
-                  favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(category.id, question)}
-                  note={notesMap[key]} onSaveNote={(text) => handleSaveNote(category.id, question, text)} />
+                  favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(category.id, question)} />
               );
             })}
             {dailyQuestions.length === 0 && (
@@ -2273,8 +2200,7 @@ export default function App() {
               return (
                 <QuestionCard key={i} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
                   onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel
-                  favorited={true} onToggleFavorite={() => handleToggleFavorite(category.id, question)}
-                  note={notesMap[key]} onSaveNote={(text) => handleSaveNote(category.id, question, text)} />
+                  favorited={true} onToggleFavorite={() => handleToggleFavorite(category.id, question)} />
               );
             })}
           </div>
@@ -2284,7 +2210,7 @@ export default function App() {
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "20px" }}>
               <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Search</h2>
-              <p style={{ margin: "0 0 16px 0", color: colors.subColor, fontSize: "14px" }}>Find a question across all 994, by keyword.</p>
+              <p style={{ margin: "0 0 16px 0", color: colors.subColor, fontSize: "14px" }}>Find a question across all {TOTAL_QUESTION_COUNT.toLocaleString()}, by keyword.</p>
               <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Try “childhood” or “trust”…"
                 style={{ width: "100%", background: dm ? "#231408" : "#faf6f0", border: "1px solid rgba(139,90,43,0.25)", borderRadius: "12px", color: colors.titleColor, fontSize: "15px", fontFamily: "'DM Sans', sans-serif", padding: "14px 16px", outline: "none", boxSizing: "border-box" }} />
             </div>
@@ -2304,8 +2230,7 @@ export default function App() {
                   return (
                     <QuestionCard key={i} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
                       onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel
-                      favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(category.id, question)}
-                      note={notesMap[key]} onSaveNote={(text) => handleSaveNote(category.id, question, text)} />
+                      favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(category.id, question)} />
                   );
                 })}
               </>
@@ -2316,8 +2241,8 @@ export default function App() {
         {tab === "browse" && !selectedCategory && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>35 Categories</h2>
-              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Browse all 994 questions by topic.</p>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>{TOTAL_CATEGORY_COUNT} Categories</h2>
+              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Browse all {TOTAL_QUESTION_COUNT.toLocaleString()} questions by topic.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
               {ALL_CATEGORIES.map((cat) => {
@@ -2343,7 +2268,7 @@ export default function App() {
 
         {tab === "browse" && selectedCategory && (
           <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} dm={dm} colors={colors}
-            favoritesMap={favoritesMap} onToggleFavorite={handleToggleFavorite} notesMap={notesMap} onSaveNote={handleSaveNote} />
+            favoritesMap={favoritesMap} onToggleFavorite={handleToggleFavorite} />
         )}
 
         {tab === "dateIdeas" && (
@@ -2432,8 +2357,7 @@ export default function App() {
                 return (
                   <QuestionCard key={`${catId}-${i}`} question={q} category={cat} isUsed={false}
                     onUse={(question) => handleUse(cat.id, question)} dm={dm} showLabel
-                    favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(cat.id, q)}
-                    note={notesMap[key]} onSaveNote={(text) => handleSaveNote(cat.id, q, text)} />
+                    favorited={!!favoritesMap[key]} onToggleFavorite={() => handleToggleFavorite(cat.id, q)} />
                 );
               });
             })}
