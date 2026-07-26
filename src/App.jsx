@@ -1216,7 +1216,6 @@ const ALL_CATEGORIES = [
       "What are some strange things that people you know believe?",
     ],
   },
-,
   {
     id: "bonus", label: "✦ Bonus Questions", color: "#fffaf4", accent: "#b8862a",
     questions: [
@@ -1656,7 +1655,7 @@ function AuthScreen() {
 }
 
 // ─── QUESTION CARD ────────────────────────────────────────────────────────────
-function QuestionCard({ question, category, onUse, isUsed }) {
+function QuestionCard({ question, category, onUse, isUsed, dm }) {
   const [justUsed, setJustUsed] = useState(false);
   const [localUsed, setLocalUsed] = useState(isUsed);
 
@@ -1688,7 +1687,7 @@ function QuestionCard({ question, category, onUse, isUsed }) {
 }
 
 // ─── CATEGORY VIEW ────────────────────────────────────────────────────────────
-function CategoryView({ category, usedMap, onUse, onBack }) {
+function CategoryView({ category, usedMap, onUse, onBack, dm, colors }) {
   const [filter, setFilter] = useState("available");
   const available = category.questions.filter((q) => isAvailable(usedMap, category.id, q));
   const used = category.questions.filter((q) => !isAvailable(usedMap, category.id, q));
@@ -1696,28 +1695,28 @@ function CategoryView({ category, usedMap, onUse, onBack }) {
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      <button onClick={onBack} style={{ background: "#fff", border: "1px solid rgba(139,90,43,0.2)", borderRadius: "10px", color: "#8b6a4a", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
+      <button onClick={onBack} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "10px", color: colors.signOutColor, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
         ← All Categories
       </button>
       <div style={{ marginBottom: "28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
           <h2 style={{ margin: 0, color: category.accent, fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300" }}>{category.label}</h2>
         </div>
-        <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>{available.length} available · {used.length} answered</p>
+        <p style={{ margin: 0, color: colors.subColor, fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>{available.length} available · {used.length} answered</p>
       </div>
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
         {["available", "answered"].map((f) => (
-          <button key={f} onClick={() => setFilter(f)} style={{ background: filter === f ? `${category.accent}15` : "#fff", border: `1px solid ${filter === f ? category.accent : "rgba(139,90,43,0.18)"}`, borderRadius: "8px", color: filter === f ? category.accent : "#a08060", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.04em", padding: "7px 14px", textTransform: "capitalize" }}>
+          <button key={f} onClick={() => setFilter(f)} style={{ background: filter === f ? `${category.accent}15` : (dm ? "rgba(245,230,200,0.04)" : "#fff"), border: `1px solid ${filter === f ? category.accent : (dm ? "rgba(245,230,200,0.15)" : "rgba(139,90,43,0.18)")}`, borderRadius: "8px", color: filter === f ? category.accent : (dm ? "#e8c898" : "#a08060"), cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.04em", padding: "7px 14px", textTransform: "capitalize" }}>
             {f === "available" ? `${available.length} Available` : `${used.length} Answered`}
           </button>
         ))}
       </div>
       {shown.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "48px 24px", color: "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
+        <div style={{ textAlign: "center", padding: "48px 24px", color: dm ? "#a4805a" : "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
           {filter === "available" ? "All questions in this category have been answered." : "No questions answered yet in this category."}
         </div>
       ) : shown.map((q, i) => (
-        <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} />
+        <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} dm={dm} />
       ))}
     </div>
   );
@@ -1866,7 +1865,7 @@ export default function App() {
     cardBg: dm ? "#231408" : "#ffffff",
     cardBorder: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.2)",
     titleColor: dm ? "#f5e6c8" : "#2c1a0e",
-    subColor: dm ? "#7a5a38" : "#8b6a4a",
+    subColor: dm ? "#c4a074" : "#8b6a4a",
     questionText: dm ? "#f0d9b8" : "#2c1a0e",
     tabActiveBg: dm ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.12)",
     tabActiveBorder: dm ? "rgba(184,134,42,0.55)" : "rgba(184,134,42,0.45)",
@@ -1982,7 +1981,7 @@ export default function App() {
               <h1 style={{ margin: 0, fontFamily: "'Monoton', cursive", fontSize: "12px", fontWeight: "400", color: colors.titleColor, letterSpacing: "0.01em", lineHeight: "1.3" }}>
                 Tonight's Connection
               </h1>
-              <p style={{ margin: 0, fontSize: "11px", color: "#8b6a4a", letterSpacing: "0.04em" }}>
+              <p style={{ margin: 0, fontSize: "11px", color: colors.subColor, letterSpacing: "0.04em" }}>
                 {dataLoading ? "Loading your history…" : `${totalAvailable} ready · ${totalUsed} answered`}
               </p>
             </div>
@@ -2040,7 +2039,7 @@ export default function App() {
             {dailyQuestions.length === 0 && (
               <div style={{ textAlign: "center", padding: "64px 24px", color: "#b0906a" }}>
                 <div style={{ fontSize: "48px", marginBottom: "16px" }}>🌙</div>
-                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "18px", color: "#8b6a4a" }}>All questions have been answered. They'll return over the next 180 days.</p>
+                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "18px", color: colors.subColor }}>All questions have been answered. They'll return over the next 180 days.</p>
               </div>
             )}
           </div>
@@ -2058,15 +2057,15 @@ export default function App() {
                 const pct = Math.round((avail / cat.questions.length) * 100);
                 return (
                   <button key={cat.id} onClick={() => setSelectedCategory(cat)}
-                    style={{ background: "#fff", border: `1px solid ${cat.accent}40`, borderRadius: "16px", cursor: "pointer", padding: "16px 14px", textAlign: "left", transition: "transform 0.15s ease, border-color 0.15s ease", boxShadow: "0 1px 6px rgba(139,90,43,0.06)" }}
+                    style={{ background: colors.cardBg, border: `1px solid ${cat.accent}40`, borderRadius: "16px", cursor: "pointer", padding: "16px 14px", textAlign: "left", transition: "transform 0.15s ease, border-color 0.15s ease", boxShadow: dm ? "none" : "0 1px 6px rgba(139,90,43,0.06)" }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = cat.accent + "99"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = cat.accent + "40"; e.currentTarget.style.transform = "translateY(0)"; }}>
                     <div style={{ width: "20px", height: "2px", background: cat.accent, borderRadius: "2px", marginBottom: "10px" }}></div>
                     <div style={{ color: cat.accent, fontSize: "11px", fontWeight: "700", lineHeight: "1.3", marginBottom: "8px", fontFamily: "'DM Sans', sans-serif" }}>{cat.label}</div>
-                    <div style={{ height: "3px", background: "rgba(139,90,43,0.12)", borderRadius: "2px", overflow: "hidden", marginBottom: "5px" }}>
+                    <div style={{ height: "3px", background: dm ? "rgba(245,230,200,0.12)" : "rgba(139,90,43,0.12)", borderRadius: "2px", overflow: "hidden", marginBottom: "5px" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: cat.accent, borderRadius: "2px" }} />
                     </div>
-                    <div style={{ fontSize: "10px", color: "#a08060", fontFamily: "'DM Sans', sans-serif" }}>{avail} of {cat.questions.length} available</div>
+                    <div style={{ fontSize: "10px", color: dm ? "#c4a074" : "#a08060", fontFamily: "'DM Sans', sans-serif" }}>{avail} of {cat.questions.length} available</div>
                   </button>
                 );
               })}
@@ -2075,7 +2074,7 @@ export default function App() {
         )}
 
         {tab === "browse" && selectedCategory && (
-          <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} />
+          <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} dm={dm} colors={colors} />
         )}
 
         {tab === "dateIdeas" && (
@@ -2129,7 +2128,7 @@ export default function App() {
                     {game.categories.map((catId, j) => {
                       const cat = ALL_CATEGORIES.find(c => c.id === catId);
                       return cat ? (
-                        <span key={j} style={{ background: "rgba(184,134,42,0.08)", border: "1px solid rgba(184,134,42,0.22)", borderRadius: "4px", fontSize: "10px", color: "#b8862a", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "2px 8px" }}>
+                        <span key={j} style={{ background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.08)", border: "1px solid rgba(184,134,42,0.3)", borderRadius: "4px", fontSize: "10px", color: dm ? "#d4a84e" : "#b8862a", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "2px 8px" }}>
                           {cat.label}
                         </span>
                       ) : null;
@@ -2147,12 +2146,12 @@ export default function App() {
 
         {tab === "games" && activeGame && (
           <div style={{ animation: "fadeIn 0.3s ease" }}>
-            <button onClick={() => setActiveGame(null)} style={{ background: "#fff", border: "1px solid rgba(139,90,43,0.2)", borderRadius: "10px", color: "#8b6a4a", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
+            <button onClick={() => setActiveGame(null)} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "10px", color: colors.signOutColor, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
               ← All Games
             </button>
             <div style={{ marginBottom: "24px" }}>
-              <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300", color: "#2c1a0e" }}>{activeGame.title}</h2>
-              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px" }}>{activeGame.description}</p>
+              <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300", color: colors.titleColor }}>{activeGame.title}</h2>
+              <p style={{ margin: 0, color: colors.subColor, fontSize: "13px" }}>{activeGame.description}</p>
             </div>
             {activeGame.categories.map(catId => {
               const cat = ALL_CATEGORIES.find(c => c.id === catId);
@@ -2160,11 +2159,11 @@ export default function App() {
               const available = cat.questions.filter(q => isAvailable(usedMap, cat.id, q));
               if (available.length === 0) return null;
               return available.map((q, i) => (
-                <div key={`${catId}-${i}`} style={{ background: "#fff", border: "1px solid rgba(184,134,42,0.2)", borderRadius: "14px", marginBottom: "10px", overflow: "hidden" }}>
+                <div key={`${catId}-${i}`} style={{ background: colors.cardBg, border: "1px solid rgba(184,134,42,0.2)", borderRadius: "14px", marginBottom: "10px", overflow: "hidden" }}>
                   <div style={{ height: "2px", background: `linear-gradient(90deg, ${cat.accent}, ${cat.accent}99)` }} />
                   <div style={{ padding: "14px 16px" }}>
                     <span style={{ color: cat.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", display: "block", marginBottom: "10px" }}>— {cat.label}</span>
-                    <p style={{ margin: "0 0 14px 0", fontSize: "15px", lineHeight: "1.65", color: "#2c1a0e", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{q}"</p>
+                    <p style={{ margin: "0 0 14px 0", fontSize: "15px", lineHeight: "1.65", color: colors.questionText, fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{q}"</p>
                     <button onClick={() => handleUse(cat.id, q)}
                       style={{ background: `linear-gradient(135deg, ${cat.accent}, ${cat.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", cursor: "pointer", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", textTransform: "uppercase" }}>
                       Select
