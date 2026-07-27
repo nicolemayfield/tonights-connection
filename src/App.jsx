@@ -31,8 +31,7 @@
 //
 // HOW COUPLES SHARE AN ACCOUNT:
 //    One partner creates the account. Both partners use the same email + password
-//    to log in from any device. Their used-question history, favorites, notes, and
-//    streak are all shared in the cloud.
+//    to log in from any device. Their used-question history is shared in the cloud.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useCallback } from "react";
@@ -46,7 +45,7 @@ const supabase = createClient(
 
 const COOLDOWN_DAYS = 180;
 
-// ─── ALL QUESTIONS (grows over time — see TOTAL_QUESTION_COUNT below) ─────────
+// ─── ALL 994 QUESTIONS ────────────────────────────────────────────────────────
 const ALL_CATEGORIES = [
   {
     id: "deep", label: "Deep", color: "#fffaf4", accent: "#a07830",
@@ -1217,6 +1216,7 @@ const ALL_CATEGORIES = [
       "What are some strange things that people you know believe?",
     ],
   },
+,
   {
     id: "bonus", label: "✦ Bonus Questions", color: "#fffaf4", accent: "#b8862a",
     questions: [
@@ -1297,13 +1297,6 @@ const ALL_CATEGORIES = [
     ],
   },
 ];
-
-// These are derived automatically from ALL_CATEGORIES above — never hardcode
-// question/category counts anywhere else in the UI. When you add a new
-// category or new bonus questions, these two numbers update themselves,
-// and everywhere they're used (Browse tab, Search tab) stays accurate.
-const TOTAL_CATEGORY_COUNT = ALL_CATEGORIES.length;
-const TOTAL_QUESTION_COUNT = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.length, 0);
 
 // ─── BONUS QUESTIONS ──────────────────────────────────────────────────────────
 // Add new bonus questions here when you have them ready.
@@ -1576,38 +1569,6 @@ function getDailyQuestion(categoryId, questions, usedMap) {
   return available[seed % available.length];
 }
 
-function dayKey(dateLike) {
-  return new Date(dateLike).toISOString().slice(0, 10);
-}
-
-function computeStreak(usedMap) {
-  const days = new Set(Object.values(usedMap).map((iso) => dayKey(iso)));
-  if (days.size === 0) return 0;
-  let streak = 0;
-  const cursor = new Date();
-  // If nothing logged yet today, that's fine — start checking from yesterday
-  // so the streak doesn't reset to 0 before the day is even over.
-  if (!days.has(dayKey(cursor))) {
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  while (days.has(dayKey(cursor))) {
-    streak++;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
-}
-
-function pickRandomAvailable(usedMap) {
-  const pool = [];
-  ALL_CATEGORIES.forEach((cat) => {
-    cat.questions.forEach((q) => {
-      if (isAvailable(usedMap, cat.id, q)) pool.push({ category: cat, question: q });
-    });
-  });
-  if (pool.length === 0) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
 // ─── AUTH SCREEN ──────────────────────────────────────────────────────────────
 function AuthScreen() {
   const [email, setEmail] = useState("");
@@ -1618,8 +1579,8 @@ function AuthScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const inputStyle = {
-    width: "100%", background: "#faf6f0", border: "1px solid rgba(139,90,43,0.2)",
-    borderRadius: "12px", color: "#2c1a0e", fontSize: "15px", fontFamily: "'DM Sans', sans-serif",
+    width: "100%", background: "#f7f5f1", border: "1px solid rgba(44,42,38,0.10)",
+    borderRadius: "12px", color: "#2c2a26", fontSize: "15px", fontFamily: "'DM Sans', sans-serif",
     padding: "14px 16px", outline: "none", boxSizing: "border-box", marginBottom: "12px", transition: "border-color 0.2s ease",
   };
 
@@ -1646,25 +1607,22 @@ function AuthScreen() {
   };
 
   return (
-    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", overflowY: "auto" }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, #f8f6f2 0%, #efece5 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 16px", overflowY: "auto" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:wght@300;400&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-        input::placeholder { color: #c0a080; }
-        input:focus { border-color: rgba(160,120,48,0.55) !important; }
+        input::placeholder { color: #b0aa9c; }
+        input:focus { border-color: rgba(184,134,42,0.5) !important; }
       `}</style>
 
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "radial-gradient(ellipse at 50% 58%, rgba(255,235,170,0.2) 0%, transparent 62%)", pointerEvents: "none" }} />
-
-      <div style={{ width: "100%", maxWidth: "400px", background: "#fff", border: "none", borderRadius: "28px", overflow: "hidden", animation: "fadeIn 0.5s ease", boxShadow: "0 20px 64px rgba(40,16,0,0.5)", position: "relative" }}>
-        <div style={{ height: "3px", background: "linear-gradient(90deg, #b8862a, #d4a84e, #b8862a)" }} />
-        <div style={{ padding: "36px 32px" }}>
-          <div style={{ textAlign: "center", marginBottom: "32px" }}>
-            <h1 style={{ margin: "0 0 6px 0", fontFamily: "'Monoton', cursive", fontSize: "22px", fontWeight: "400", color: "#2c1a0e", lineHeight: "1.35", letterSpacing: "0.02em" }}>
+      <div style={{ width: "100%", maxWidth: "400px", background: "#fff", border: "1px solid rgba(44,42,38,0.06)", borderRadius: "24px", overflow: "hidden", animation: "fadeIn 0.5s ease", boxShadow: "0 20px 50px rgba(40,35,25,0.10)", position: "relative" }}>
+        <div style={{ padding: "44px 32px 36px" }}>
+          <div style={{ textAlign: "center", marginBottom: "34px" }}>
+            <h1 style={{ margin: "0 0 8px 0", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "30px", fontWeight: "400", color: "#2c2a26", lineHeight: "1.2", letterSpacing: "0.01em" }}>
               Tonight's Connection
             </h1>
-            <p style={{ margin: 0, color: "#8b6a4a", fontSize: "15px", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontWeight: "300", lineHeight: "1.4" }}>
+            <p style={{ margin: 0, color: "#948d7f", fontSize: "13px", fontFamily: "'Lora', serif", fontStyle: "italic", fontWeight: "400", lineHeight: "1.4" }}>
               Thoughtful Questions for Stronger Connections
             </p>
           </div>
@@ -1695,7 +1653,7 @@ function AuthScreen() {
 }
 
 // ─── QUESTION CARD ────────────────────────────────────────────────────────────
-function QuestionCard({ question, category, onUse, isUsed, dm, showLabel }) {
+function QuestionCard({ question, category, onUse, isUsed }) {
   const [justUsed, setJustUsed] = useState(false);
   const [localUsed, setLocalUsed] = useState(isUsed);
 
@@ -1709,22 +1667,16 @@ function QuestionCard({ question, category, onUse, isUsed, dm, showLabel }) {
     <div style={{ background: dm ? "#231408" : "#fff", border: `1px solid ${localUsed ? category.accent + "40" : "rgba(184,134,42,0.18)"}`, borderRadius: "14px", marginBottom: "10px", opacity: localUsed && !justUsed ? 0.5 : 1, transition: "all 0.3s ease", overflow: "hidden" }}>
       <div style={{ height: "3px", background: localUsed && !justUsed ? "rgba(184,134,42,0.2)" : `linear-gradient(90deg, ${category.accent}, ${category.accent}99)` }} />
       <div style={{ padding: "16px 18px" }}>
-        {showLabel && (
-          <div style={{ marginBottom: "10px" }}>
-            <span style={{ color: category.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>— {category.label}</span>
-          </div>
-        )}
         <p style={{ margin: "0 0 14px 0", color: localUsed && !justUsed ? "#c0a880" : (dm ? "#f0d9b8" : "#2c1a0e"), fontSize: "15px", lineHeight: "1.6", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>
           {question}
         </p>
-
         {!localUsed ? (
           <button onClick={handleUse} style={{ background: `linear-gradient(135deg, ${category.accent}, ${category.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase", boxShadow: `0 3px 10px ${category.accent}44` }}>
             Select
           </button>
         ) : (
           <span style={{ fontSize: "12px", color: category.accent, fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", opacity: 0.7 }}>
-            {justUsed ? "Answered — returns in 180 days" : "Answered · Returns in 180 days"}
+            {justUsed ? "✨ Answered — returns in 180 days" : "Answered · Returns in 180 days"}
           </span>
         )}
       </div>
@@ -1733,7 +1685,7 @@ function QuestionCard({ question, category, onUse, isUsed, dm, showLabel }) {
 }
 
 // ─── CATEGORY VIEW ────────────────────────────────────────────────────────────
-function CategoryView({ category, usedMap, onUse, onBack, dm, colors }) {
+function CategoryView({ category, usedMap, onUse, onBack }) {
   const [filter, setFilter] = useState("available");
   const available = category.questions.filter((q) => isAvailable(usedMap, category.id, q));
   const used = category.questions.filter((q) => !isAvailable(usedMap, category.id, q));
@@ -1741,28 +1693,28 @@ function CategoryView({ category, usedMap, onUse, onBack, dm, colors }) {
 
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
-      <button onClick={onBack} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "10px", color: colors.signOutColor, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
+      <button onClick={onBack} style={{ background: "#fff", border: "1px solid rgba(139,90,43,0.2)", borderRadius: "10px", color: "#8b6a4a", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
         ← All Categories
       </button>
       <div style={{ marginBottom: "28px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
           <h2 style={{ margin: 0, color: category.accent, fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300" }}>{category.label}</h2>
         </div>
-        <p style={{ margin: 0, color: colors.subColor, fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>{available.length} available · {used.length} answered</p>
+        <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>{available.length} available · {used.length} answered</p>
       </div>
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
         {["available", "answered"].map((f) => (
-          <button key={f} onClick={() => setFilter(f)} style={{ background: filter === f ? `${category.accent}15` : (dm ? "rgba(245,230,200,0.04)" : "#fff"), border: `1px solid ${filter === f ? category.accent : (dm ? "rgba(245,230,200,0.15)" : "rgba(139,90,43,0.18)")}`, borderRadius: "8px", color: filter === f ? category.accent : (dm ? "#e8c898" : "#a08060"), cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.04em", padding: "7px 14px", textTransform: "capitalize" }}>
+          <button key={f} onClick={() => setFilter(f)} style={{ background: filter === f ? `${category.accent}15` : "#fff", border: `1px solid ${filter === f ? category.accent : "rgba(139,90,43,0.18)"}`, borderRadius: "8px", color: filter === f ? category.accent : "#a08060", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.04em", padding: "7px 14px", textTransform: "capitalize" }}>
             {f === "available" ? `${available.length} Available` : `${used.length} Answered`}
           </button>
         ))}
       </div>
       {shown.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "48px 24px", color: dm ? "#a4805a" : "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
+        <div style={{ textAlign: "center", padding: "48px 24px", color: "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
           {filter === "available" ? "All questions in this category have been answered." : "No questions answered yet in this category."}
         </div>
       ) : shown.map((q, i) => (
-        <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} dm={dm} />
+        <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} />
       ))}
     </div>
   );
@@ -1889,7 +1841,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [usedToast, setUsedToast] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
-  const [surpriseQuestion, setSurpriseQuestion] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
     try {
@@ -1912,7 +1863,7 @@ export default function App() {
     cardBg: dm ? "#231408" : "#ffffff",
     cardBorder: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.2)",
     titleColor: dm ? "#f5e6c8" : "#2c1a0e",
-    subColor: dm ? "#c4a074" : "#8b6a4a",
+    subColor: dm ? "#7a5a38" : "#8b6a4a",
     questionText: dm ? "#f0d9b8" : "#2c1a0e",
     tabActiveBg: dm ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.12)",
     tabActiveBorder: dm ? "rgba(184,134,42,0.55)" : "rgba(184,134,42,0.45)",
@@ -1996,9 +1947,6 @@ export default function App() {
   const totalAvailable = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => isAvailable(usedMap, cat.id, q)).length, 0);
   const totalUsed = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => !isAvailable(usedMap, cat.id, q)).length, 0);
   const dailyQuestions = ALL_CATEGORIES.map((cat) => ({ category: cat, question: getDailyQuestion(cat.id, cat.questions, usedMap) })).filter((d) => d.question !== null);
-  const streak = computeStreak(usedMap);
-
-  const handleSurpriseMe = () => setSurpriseQuestion(pickRandomAvailable(usedMap));
 
   if (authLoading) return (
     <div style={{ height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none" }}>
@@ -2031,11 +1979,8 @@ export default function App() {
               <h1 style={{ margin: 0, fontFamily: "'Monoton', cursive", fontSize: "12px", fontWeight: "400", color: colors.titleColor, letterSpacing: "0.01em", lineHeight: "1.3" }}>
                 Tonight's Connection
               </h1>
-              <p style={{ margin: 0, fontSize: "11px", color: colors.subColor, letterSpacing: "0.04em" }}>
+              <p style={{ margin: 0, fontSize: "11px", color: "#8b6a4a", letterSpacing: "0.04em" }}>
                 {dataLoading ? "Loading your history…" : `${totalAvailable} ready · ${totalUsed} answered`}
-                {!dataLoading && streak > 0 && (
-                  <span style={{ color: "#b8862a", fontWeight: "700" }}> · {streak}-day streak</span>
-                )}
               </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "5px", flexShrink: 0 }}>
@@ -2043,7 +1988,7 @@ export default function App() {
                 Sign Out
               </button>
               <button onClick={toggleDarkMode} style={{ background: dm ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.12)", border: "1px solid rgba(184,134,42,0.4)", borderRadius: "20px", color: dm ? "#d4a84e" : "#8a6220", cursor: "pointer", fontSize: "10px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", padding: "3px 10px", whiteSpace: "nowrap" }}>
-                {dm ? "Light" : "Dark"}
+                {dm ? "☀ Light" : "🌙 Dark"}
               </button>
             </div>
           </div>
@@ -2061,7 +2006,7 @@ export default function App() {
       {/* TOAST */}
       {usedToast && (
         <div style={{ position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", background: "#a07830", color: "#fff", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: "600", zIndex: 999, maxWidth: "320px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.4)", animation: "fadeIn 0.3s ease" }}>
-          Saved to your account — returns in 180 days
+          ✨ Saved to your account — returns in 180 days
         </div>
       )}
 
@@ -2070,34 +2015,29 @@ export default function App() {
 
         {tab === "daily" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <div style={{ marginBottom: "20px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-              <div>
-                <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Tonight's Questions</h2>
-                <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
-              </div>
-              <button onClick={handleSurpriseMe} style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", padding: "10px 16px", whiteSpace: "nowrap", boxShadow: "0 3px 12px rgba(184,134,42,0.35)" }}>
-                Surprise Me
-              </button>
+            <div style={{ marginBottom: "28px" }}>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Tonight's Questions</h2>
+              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
             </div>
-
-            {surpriseQuestion && (
-              <div style={{ marginBottom: "20px" }}>
-                <QuestionCard question={surpriseQuestion.question} category={surpriseQuestion.category} isUsed={!isAvailable(usedMap, surpriseQuestion.category.id, surpriseQuestion.question)}
-                  onUse={(q) => handleUse(surpriseQuestion.category.id, q)} dm={dm} showLabel />
-                <button onClick={handleSurpriseMe} style={{ background: "none", border: `1px solid ${dm ? "rgba(245,230,200,0.2)" : "rgba(139,90,43,0.2)"}`, borderRadius: "8px", color: colors.subColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "7px 14px" }}>
-                  Shuffle Again
-                </button>
-              </div>
-            )}
-
             {dailyQuestions.map(({ category, question }) => (
-              <QuestionCard key={category.id} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
-                onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel />
+              <div key={category.id} style={{ background: colors.cardBg, border: `1px solid ${category.accent}30`, borderRadius: "16px", marginBottom: "14px", boxShadow: dm ? "none" : "0 2px 12px rgba(139,90,43,0.08)", overflow: "hidden" }}>
+                <div style={{ height: "3px", background: `linear-gradient(90deg, ${category.accent}, ${category.accent}99, ${category.accent})` }} />
+                <div style={{ padding: "18px 20px" }}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <span style={{ color: category.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif" }}>— {category.label}</span>
+                  </div>
+                  <p style={{ margin: "0 0 16px 0", fontSize: "16px", lineHeight: "1.65", color: colors.questionText, fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{question}"</p>
+                  <button onClick={() => handleUse(category.id, question)}
+                    style={{ background: `linear-gradient(135deg, ${category.accent}, ${category.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", cursor: "pointer", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "9px 18px", textTransform: "uppercase", boxShadow: `0 3px 10px ${category.accent}44` }}>
+                    Select
+                  </button>
+                </div>
+              </div>
             ))}
             {dailyQuestions.length === 0 && (
               <div style={{ textAlign: "center", padding: "64px 24px", color: "#b0906a" }}>
-                <div style={{ fontSize: "28px", marginBottom: "16px", color: "#b8862a", fontFamily: "'Cormorant Garamond', serif" }}>✦</div>
-                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "18px", color: colors.subColor }}>All questions have been answered. They'll return over the next 180 days.</p>
+                <div style={{ fontSize: "48px", marginBottom: "16px" }}>🌙</div>
+                <p style={{ fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "18px", color: "#8b6a4a" }}>All questions have been answered. They'll return over the next 180 days.</p>
               </div>
             )}
           </div>
@@ -2106,8 +2046,8 @@ export default function App() {
         {tab === "browse" && !selectedCategory && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "28px" }}>
-              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>{TOTAL_CATEGORY_COUNT} Categories</h2>
-              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Browse all {TOTAL_QUESTION_COUNT.toLocaleString()} questions by topic.</p>
+              <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>35 Categories</h2>
+              <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Browse all 994 questions by topic.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
               {ALL_CATEGORIES.map((cat) => {
@@ -2115,15 +2055,15 @@ export default function App() {
                 const pct = Math.round((avail / cat.questions.length) * 100);
                 return (
                   <button key={cat.id} onClick={() => setSelectedCategory(cat)}
-                    style={{ background: colors.cardBg, border: `1px solid ${cat.accent}40`, borderRadius: "16px", cursor: "pointer", padding: "16px 14px", textAlign: "left", transition: "transform 0.15s ease, border-color 0.15s ease", boxShadow: dm ? "none" : "0 1px 6px rgba(139,90,43,0.06)" }}
+                    style={{ background: "#fff", border: `1px solid ${cat.accent}40`, borderRadius: "16px", cursor: "pointer", padding: "16px 14px", textAlign: "left", transition: "transform 0.15s ease, border-color 0.15s ease", boxShadow: "0 1px 6px rgba(139,90,43,0.06)" }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = cat.accent + "99"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = cat.accent + "40"; e.currentTarget.style.transform = "translateY(0)"; }}>
                     <div style={{ width: "20px", height: "2px", background: cat.accent, borderRadius: "2px", marginBottom: "10px" }}></div>
                     <div style={{ color: cat.accent, fontSize: "11px", fontWeight: "700", lineHeight: "1.3", marginBottom: "8px", fontFamily: "'DM Sans', sans-serif" }}>{cat.label}</div>
-                    <div style={{ height: "3px", background: dm ? "rgba(245,230,200,0.12)" : "rgba(139,90,43,0.12)", borderRadius: "2px", overflow: "hidden", marginBottom: "5px" }}>
+                    <div style={{ height: "3px", background: "rgba(139,90,43,0.12)", borderRadius: "2px", overflow: "hidden", marginBottom: "5px" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: cat.accent, borderRadius: "2px" }} />
                     </div>
-                    <div style={{ fontSize: "10px", color: dm ? "#c4a074" : "#a08060", fontFamily: "'DM Sans', sans-serif" }}>{avail} of {cat.questions.length} available</div>
+                    <div style={{ fontSize: "10px", color: "#a08060", fontFamily: "'DM Sans', sans-serif" }}>{avail} of {cat.questions.length} available</div>
                   </button>
                 );
               })}
@@ -2132,7 +2072,7 @@ export default function App() {
         )}
 
         {tab === "browse" && selectedCategory && (
-          <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} dm={dm} colors={colors} />
+          <CategoryView category={selectedCategory} usedMap={usedMap} onUse={handleUse} onBack={() => setSelectedCategory(null)} />
         )}
 
         {tab === "dateIdeas" && (
@@ -2186,7 +2126,7 @@ export default function App() {
                     {game.categories.map((catId, j) => {
                       const cat = ALL_CATEGORIES.find(c => c.id === catId);
                       return cat ? (
-                        <span key={j} style={{ background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.08)", border: "1px solid rgba(184,134,42,0.3)", borderRadius: "4px", fontSize: "10px", color: dm ? "#d4a84e" : "#b8862a", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "2px 8px" }}>
+                        <span key={j} style={{ background: "rgba(184,134,42,0.08)", border: "1px solid rgba(184,134,42,0.22)", borderRadius: "4px", fontSize: "10px", color: "#b8862a", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "2px 8px" }}>
                           {cat.label}
                         </span>
                       ) : null;
@@ -2204,12 +2144,12 @@ export default function App() {
 
         {tab === "games" && activeGame && (
           <div style={{ animation: "fadeIn 0.3s ease" }}>
-            <button onClick={() => setActiveGame(null)} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "10px", color: colors.signOutColor, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
+            <button onClick={() => setActiveGame(null)} style={{ background: "#fff", border: "1px solid rgba(139,90,43,0.2)", borderRadius: "10px", color: "#8b6a4a", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
               ← All Games
             </button>
             <div style={{ marginBottom: "24px" }}>
-              <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300", color: colors.titleColor }}>{activeGame.title}</h2>
-              <p style={{ margin: 0, color: colors.subColor, fontSize: "13px" }}>{activeGame.description}</p>
+              <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300", color: "#2c1a0e" }}>{activeGame.title}</h2>
+              <p style={{ margin: 0, color: "#8b6a4a", fontSize: "13px" }}>{activeGame.description}</p>
             </div>
             {activeGame.categories.map(catId => {
               const cat = ALL_CATEGORIES.find(c => c.id === catId);
@@ -2217,8 +2157,17 @@ export default function App() {
               const available = cat.questions.filter(q => isAvailable(usedMap, cat.id, q));
               if (available.length === 0) return null;
               return available.map((q, i) => (
-                <QuestionCard key={`${catId}-${i}`} question={q} category={cat} isUsed={false}
-                  onUse={(question) => handleUse(cat.id, question)} dm={dm} showLabel />
+                <div key={`${catId}-${i}`} style={{ background: "#fff", border: "1px solid rgba(184,134,42,0.2)", borderRadius: "14px", marginBottom: "10px", overflow: "hidden" }}>
+                  <div style={{ height: "2px", background: `linear-gradient(90deg, ${cat.accent}, ${cat.accent}99)` }} />
+                  <div style={{ padding: "14px 16px" }}>
+                    <span style={{ color: cat.accent, fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", display: "block", marginBottom: "10px" }}>— {cat.label}</span>
+                    <p style={{ margin: "0 0 14px 0", fontSize: "15px", lineHeight: "1.65", color: "#2c1a0e", fontFamily: "'Lora', Georgia, serif", fontStyle: "italic" }}>"{q}"</p>
+                    <button onClick={() => handleUse(cat.id, q)}
+                      style={{ background: `linear-gradient(135deg, ${cat.accent}, ${cat.accent}cc)`, border: "none", borderRadius: "8px", color: "#fff", cursor: "pointer", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", textTransform: "uppercase" }}>
+                      Select
+                    </button>
+                  </div>
+                </div>
               ));
             })}
           </div>
