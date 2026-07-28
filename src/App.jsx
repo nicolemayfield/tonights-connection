@@ -1887,7 +1887,7 @@ export default function App() {
     cardBg: dm ? "#231408" : "#ffffff",
     cardBorder: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.2)",
     titleColor: dm ? "#f5e6c8" : "#2c1a0e",
-    subColor: dm ? "#7a5a38" : "#8b6a4a",
+    subColor: dm ? "#d9c4a0" : "#8b6a4a",
     questionText: dm ? "#f0d9b8" : "#2c1a0e",
     tabActiveBg: dm ? "rgba(184,134,42,0.2)" : "rgba(184,134,42,0.12)",
     tabActiveBorder: dm ? "rgba(184,134,42,0.55)" : "rgba(184,134,42,0.45)",
@@ -2129,7 +2129,7 @@ export default function App() {
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = cat.accent + "40"; e.currentTarget.style.transform = "translateY(0)"; }}>
                     <div style={{ width: "20px", height: "2px", background: cat.accent, borderRadius: "2px", marginBottom: "10px" }}></div>
                     <div style={{ color: cat.accent, fontSize: "11px", fontWeight: "700", lineHeight: "1.3", marginBottom: "8px", fontFamily: "'DM Sans', sans-serif" }}>{cat.label}</div>
-                    <div style={{ height: "3px", background: "rgba(139,90,43,0.12)", borderRadius: "2px", overflow: "hidden", marginBottom: "5px" }}>
+                    <div style={{ height: "3px", background: dm ? "rgba(217,196,160,0.18)" : "rgba(139,90,43,0.12)", borderRadius: "2px", overflow: "hidden", marginBottom: "5px" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: cat.accent, borderRadius: "2px" }} />
                     </div>
                     <div style={{ fontSize: "10px", color: colors.subColor, fontFamily: "'DM Sans', sans-serif" }}>{avail} of {cat.questions.length} available</div>
