@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resend Access Link — Tonight's Connection</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: linear-gradient(165deg, #3d1f08 0%, #a05820 38%, #d4943a 72%, #e8c07a 100%);
+      background: linear-gradient(180deg, #f8f6f2 0%, #efece5 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -20,37 +20,36 @@
 
     .card {
       background: #fff;
-      border-radius: 28px;
+      border-radius: 24px;
       overflow: hidden;
       width: 100%;
       max-width: 460px;
-      box-shadow: 0 20px 64px rgba(40,16,0,0.5);
-    }
-
-    .gold-bar {
-      height: 3px;
-      background: linear-gradient(90deg, #b8862a, #d4a84e, #b8862a);
+      border: 1px solid rgba(44,42,38,0.06);
+      box-shadow: 0 20px 50px rgba(40,35,25,0.10);
     }
 
     .card-inner {
-      padding: 40px 36px 36px;
+      padding: 44px 36px 36px;
     }
 
     .title {
-      font-family: 'Monoton', cursive;
-      font-size: 18px;
-      color: #2c1a0e;
-      line-height: 1.35;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 26px;
+      color: #2c2a26;
+      line-height: 1.2;
       text-align: center;
       margin-bottom: 8px;
+      letter-spacing: 0.01em;
     }
 
     .subtitle {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Lora', serif;
       font-style: italic;
-      font-weight: 300;
-      font-size: 15px;
-      color: #8b6a4a;
+      font-weight: 400;
+      font-size: 13px;
+      color: #948d7f;
       text-align: center;
       margin-bottom: 28px;
       line-height: 1.5;
@@ -71,7 +70,7 @@
 
     .help-text {
       font-size: 13px;
-      color: #8b6a4a;
+      color: #8b8579;
       line-height: 1.65;
       margin-bottom: 22px;
       text-align: center;
@@ -81,7 +80,7 @@
       display: block;
       font-size: 11px;
       font-weight: 600;
-      color: #8b6a4a;
+      color: #948d7f;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-bottom: 6px;
@@ -89,10 +88,10 @@
 
     input[type="email"] {
       width: 100%;
-      background: #faf4ea;
-      border: 1px solid rgba(184,134,42,0.22);
+      background: #f7f5f1;
+      border: 1px solid rgba(44,42,38,0.10);
       border-radius: 12px;
-      color: #2c1a0e;
+      color: #2c2a26;
       font-size: 15px;
       font-family: 'DM Sans', sans-serif;
       padding: 14px 16px;
@@ -101,9 +100,9 @@
       transition: border-color 0.2s ease;
     }
     input[type="email"]:focus {
-      border-color: rgba(184,134,42,0.55);
+      border-color: rgba(184,134,42,0.5);
     }
-    input[type="email"]::placeholder { color: #c0a080; }
+    input[type="email"]::placeholder { color: #b0aa9c; }
 
     button {
       width: 100%;
@@ -119,7 +118,7 @@
       text-transform: uppercase;
       cursor: pointer;
       transition: opacity 0.2s ease;
-      box-shadow: 0 4px 18px rgba(184,134,42,0.4);
+      box-shadow: 0 6px 18px rgba(184,134,42,0.4);
     }
     button:disabled {
       opacity: 0.5;
@@ -164,7 +163,6 @@
 </head>
 <body>
   <div class="card">
-    <div class="gold-bar"></div>
     <div class="card-inner">
 
       <div class="title">Tonight's Connection</div>
