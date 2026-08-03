@@ -2789,7 +2789,7 @@ function CategoryView({ category, usedMap, onUse, onBack, dm, colors }) {
           {filter === "available" ? "All questions in this category have been answered." : "No questions answered yet in this category."}
         </div>
       ) : shown.map((q, i) => (
-        <QuestionCard key={i} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} dm={dm} />
+        <QuestionCard key={q} question={q} category={category} isUsed={!isAvailable(usedMap, category.id, q)} onUse={(question) => onUse(category.id, question)} dm={dm} />
       ))}
     </div>
   );
@@ -3110,7 +3110,7 @@ export default function App() {
 
             {surpriseQuestion && (
               <div style={{ marginBottom: "20px" }}>
-                <QuestionCard question={surpriseQuestion.question} category={surpriseQuestion.category} isUsed={!isAvailable(usedMap, surpriseQuestion.category.id, surpriseQuestion.question)}
+                <QuestionCard key={`${surpriseQuestion.category.id}::${surpriseQuestion.question}`} question={surpriseQuestion.question} category={surpriseQuestion.category} isUsed={!isAvailable(usedMap, surpriseQuestion.category.id, surpriseQuestion.question)}
                   onUse={(q) => handleUse(surpriseQuestion.category.id, q)} dm={dm} showLabel />
                 <button onClick={handleSurpriseMe} style={{ background: "none", border: `1px solid ${dm ? "rgba(245,230,200,0.2)" : "rgba(139,90,43,0.2)"}`, borderRadius: "8px", color: colors.subColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", padding: "7px 14px" }}>
                   Shuffle Again
@@ -3119,7 +3119,7 @@ export default function App() {
             )}
 
             {dailyQuestions.map(({ category, question }) => (
-              <QuestionCard key={category.id} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
+              <QuestionCard key={`${category.id}::${question}`} question={question} category={category} isUsed={!isAvailable(usedMap, category.id, question)}
                 onUse={(q) => handleUse(category.id, q)} dm={dm} showLabel />
             ))}
             {dailyQuestions.length === 0 && (
@@ -3259,7 +3259,7 @@ export default function App() {
               </div>
             )}
             {gameQuestion ? (
-              <QuestionCard question={gameQuestion.question} category={gameQuestion.category} isUsed={!isAvailable(usedMap, gameQuestion.category.id, gameQuestion.question)}
+              <QuestionCard key={`${gameQuestion.category.id}::${gameQuestion.question}`} question={gameQuestion.question} category={gameQuestion.category} isUsed={!isAvailable(usedMap, gameQuestion.category.id, gameQuestion.question)}
                 onUse={(q) => handleUse(gameQuestion.category.id, q)} dm={dm} showLabel />
             ) : (
               <div style={{ textAlign: "center", padding: "48px 24px", color: dm ? "#a4805a" : "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
