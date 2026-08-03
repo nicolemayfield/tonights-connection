@@ -1486,7 +1486,7 @@ const ALL_CATEGORIES = [
     ],
   },
   {
-    id: "groupchat", label: "Group Chat Fun Facts", color: "#fffcf0", accent: "#b89020",
+    id: "groupchat", label: "Group Chat Fun Facts", color: "#fffcf0", accent: "#b89020", hideFromBrowse: true,
     questions: [
       "Which one of us is the most likely to disappear and come back like nothing happened?",
       "Who in the chat gives the best advice?",
@@ -2281,14 +2281,99 @@ const ALL_CATEGORIES = [
       "What's one question you didn't expect to answer today?",
     ],
   },
+  {
+    id: "bonus", label: "✦ Bonus Questions", color: "#fffaf4", accent: "#b8862a",
+    questions: [
+      "If we accidentally missed our flight and had 24 unexpected hours together, how would we spend every minute?",
+      "If I surprised you with dessert at midnight, what would you secretly hope I walked in carrying?",
+      "Before you answer this one, scoot as close to me as you comfortably can. What's your favorite thing about being this close to me?",
+      "If we woke up tomorrow in Paris with absolutely no plans, where would we wander first?",
+      "If our relationship had a signature scent, what would it smell like?",
+      "If someone secretly paid for our dream weekend together, what would it include from beginning to end?",
+      "Look into my eyes for 15 seconds before answering. What did you notice?",
+      "If we opened a little café together, what would we name it?",
+      "If we had to slow dance in one place for the rest of our lives, where would it be?",
+      "Which smile of mine gets you every single time?",
+      "If we recreated our first date using only things we could find at home, how would we do it?",
+      "What's one tiny thing I do that always makes you smile?",
+      "If we could magically skip every responsibility tomorrow, how would we spend the day together?",
+      "Without saying a word, show me how you'd get my attention from across a crowded room.",
+      "If we had matching tattoos that only we understood, what would they be?",
+      "If we were snowed into a cabin for three days, what would our perfect first evening look like?",
+      "If we had our own secret handshake, what ridiculous move would have to be part of it?",
+      "If someone made a movie about us, what's the funniest scene they would include?",
+      "If we could instantly master one hobby together, what would you choose?",
+      "If we spent an entire Saturday laughing until our cheeks hurt, what do you think we'd end up doing?",
+      "If we could press pause on life for one entire day, what would we do together?",
+      "Before answering, hold my hand. What's one thing you hope we never stop doing together?",
+      "If we could instantly become experts at one activity to enjoy together, what would you choose?",
+      "If we each planned a surprise date for the other with the exact same budget, what do you think we'd come up with?",
+      "If our love story had a title, what would it be?",
+      "Without explaining, point to who is more likely to start laughing at the worst possible moment.",
+      "If we rented a beach house for a week, what would our perfect day look like from sunrise to bedtime?",
+      "What's one compliment you've thought about giving me but haven't said yet?",
+      "If we could relive one conversation we've had, which one would you choose?",
+      "Before you answer, give me your best smile. What's your favorite memory of us laughing together?",
+      "If we could magically teleport somewhere for dinner tonight, where are we eating?",
+      "If our relationship had a theme song, what would its vibe be?",
+      "If we had to invent our own holiday, what would we celebrate every year?",
+      "What's one adventure that sounds just a little crazy — but you'd actually do if I asked?",
+      "If we spent an entire day with our phones turned off, what do you think we'd enjoy most?",
+      "If we built the ultimate blanket fort tonight, what snacks, movies, or games are coming inside with us?",
+      "What's something simple that instantly makes a day feel special when we're together?",
+      "If someone gave us tickets to any concert in history, who are we going to see?",
+      "Without using any words, make the face you'd give me if I suggested an unexpected road trip right now.",
+      "If we had one free afternoon with perfect weather, where would you want us to go?",
+      "What's something we've never done together that you'd love for us to try this year?",
+      "If we had to describe our relationship using only three emojis, which ones would you choose?",
+      "Imagine we're celebrating our 25th anniversary. What's the story you think we'll love telling everyone about us?",
+      "If we had to cook dinner together using only five ingredients, what would we make?",
+      "What's one ordinary errand that somehow sounds fun if we're doing it together?",
+      "If someone gave us a camera crew for one day to document our lives, what would be the funniest moment they'd probably capture?",
+      "Without saying anything, show me the dance move you'd use to celebrate really good news with me.",
+      "If we had our own signature dessert, what would it be?",
+      "What's one thing you hope we never become too old to do together?",
+      "If we created a time capsule of our relationship today, what three things would we put inside?",
+      "If we got caught in a warm summer rainstorm, would you run for cover or stay and enjoy it with me?",
+      "If you could instantly plan our perfect Sunday, what would it look like from morning until bedtime?",
+      "What's something about me that still catches you off guard — in the best way?",
+      "If we had to choose one city to visit together every year for the rest of our lives, which would you pick?",
+      "If our relationship had an official mascot, what would it be?",
+      "If we had an unexpected snow day with nowhere to be, how would we spend it?",
+      "What's one tiny habit of mine that you've grown to love?",
+      "If we were contestants on a game show together, what would our biggest strength as a team be?",
+      "What's one thing you think we'd laugh about if we looked back on today ten years from now?",
+      "If we could spend one evening learning something completely new together, what would you choose?",
+      "If we had a porch with two rocking chairs overlooking a beautiful view, what conversation do you imagine us having there?",
+      "If we could create one brand-new tradition that's uniquely ours, what would it be?",
+      "If we could spend one evening under a sky full of stars anywhere in the world, where would you take us?",
+      "What's one little thing I do that instantly makes your day better?",
+      "If we had to build the world's greatest ice cream sundae together, what would be on it?",
+      "If we each wrote one sentence describing our relationship, what do you think we'd have in common?",
+      "Without saying a word, show me the face you'd make if I told you I had a surprise waiting for us.",
+      "If we had an entire amusement park to ourselves, which ride would we head to first?",
+      "What's one tradition from your childhood you'd love for us to make our own?",
+      "If our relationship had an official holiday, what would people do to celebrate it?",
+      "If someone gave us front-row seats to any live performance, what are we going to see?",
+      "If we could instantly become amazing dancers, what style would you want us to learn?",
+      "If we had to invent a secret code word that meant 'I love you,' what would it be?",
+      "Imagine we're looking through a photo album 30 years from now. Which picture do you hope makes us stop and smile the longest?"
+    ],
+  },
 ];
 
-// These are derived automatically from ALL_CATEGORIES above — never hardcode
-// question/category counts anywhere else in the UI. When you add a new
-// category or new bonus questions, these two numbers update themselves,
+// Categories flagged hideFromBrowse (currently just Group Chat Fun Facts,
+// which lives only in its own Conversation Game) are excluded from the
+// Browse tab, category counts, and daily rotation — but still stay in
+// ALL_CATEGORIES so their game can look them up by id.
+const BROWSABLE_CATEGORIES = ALL_CATEGORIES.filter((cat) => !cat.hideFromBrowse);
+
+// These are derived automatically from BROWSABLE_CATEGORIES above — never
+// hardcode question/category counts anywhere else in the UI. When you add a
+// new category or new bonus questions, these two numbers update themselves,
 // and everywhere they're used (Browse tab) stays accurate.
-const TOTAL_CATEGORY_COUNT = ALL_CATEGORIES.length;
-const TOTAL_QUESTION_COUNT = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.length, 0);
+const TOTAL_CATEGORY_COUNT = BROWSABLE_CATEGORIES.length;
+const TOTAL_QUESTION_COUNT = BROWSABLE_CATEGORIES.reduce((sum, cat) => sum + cat.questions.length, 0);
 
 // ─── DATE IDEAS ───────────────────────────────────────────────────────────────
 const DATE_IDEAS = [
@@ -2513,6 +2598,11 @@ const CONVERSATION_GAMES = [
     categories: ["rapidfire", "saywhat", "awkward", "personality"]
   },
   {
+    title: "Group Chat Fun Facts",
+    description: "Assign roles, settle debates, and see who really knows the group best.",
+    categories: ["groupchat"]
+  },
+  {
     title: "Cards & Conversation",
     description: "Deal the cards and enjoy the conversation.",
     categories: ["rapidfire", "awkward", "personality", "saywhat"]
@@ -2612,6 +2702,7 @@ function computeStreak(usedMap) {
 function pickRandomAvailable(usedMap) {
   const pool = [];
   ALL_CATEGORIES.forEach((cat) => {
+    if (cat.hideFromBrowse) return; // e.g. Group Chat Fun Facts — exclusive to its own game
     cat.questions.forEach((q) => {
       if (isAvailable(usedMap, cat.id, q)) pool.push({ category: cat, question: q });
     });
@@ -3021,9 +3112,9 @@ export default function App() {
 
   const handleSignOut = async () => await supabase.auth.signOut();
 
-  const totalAvailable = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => isAvailable(usedMap, cat.id, q)).length, 0);
-  const totalUsed = ALL_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => !isAvailable(usedMap, cat.id, q)).length, 0);
-  const dailyQuestions = ALL_CATEGORIES.map((cat) => ({ category: cat, question: getDailyQuestion(cat.id, cat.questions, usedMap) })).filter((d) => d.question !== null);
+  const totalAvailable = BROWSABLE_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => isAvailable(usedMap, cat.id, q)).length, 0);
+  const totalUsed = BROWSABLE_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => !isAvailable(usedMap, cat.id, q)).length, 0);
+  const dailyQuestions = BROWSABLE_CATEGORIES.map((cat) => ({ category: cat, question: getDailyQuestion(cat.id, cat.questions, usedMap) })).filter((d) => d.question !== null);
   const streak = computeStreak(usedMap);
 
   const handleSurpriseMe = () => setSurpriseQuestion(pickRandomAvailable(usedMap));
@@ -3138,7 +3229,7 @@ export default function App() {
               <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Browse all {TOTAL_QUESTION_COUNT.toLocaleString()} questions by topic.</p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-              {ALL_CATEGORIES.map((cat) => {
+              {BROWSABLE_CATEGORIES.map((cat) => {
                 const avail = cat.questions.filter((q) => isAvailable(usedMap, cat.id, q)).length;
                 const pct = Math.round((avail / cat.questions.length) * 100);
                 return (
