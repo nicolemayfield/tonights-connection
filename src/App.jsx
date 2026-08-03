@@ -2498,44 +2498,69 @@ const DATE_IDEAS = [
 // ─── CONVERSATION GAMES ───────────────────────────────────────────────────────
 const CONVERSATION_GAMES = [
   {
-    title: "Family Game Night",
-    description: "Bring everyone together for a night of great conversations.",
-    categories: ["awkward", "movies", "entertainment"]
+    title: "Family Fun",
+    description: "Bring everyone together for a fun time filled with great conversations.",
+    categories: ["awkward", "movies", "entertainment", "everyday"]
   },
   {
-    title: "Pizza & Game Night",
-    description: "Order your favorite pizza and let Tonight's Connection be the game.",
-    categories: ["personality", "imagination", "awkward"]
+    title: "Couple Time",
+    description: "A fun way for couples to laugh, connect, and learn something new about each other.",
+    categories: ["love", "lovelies", "personality", "realtalk"]
+  },
+  {
+    title: "Friend Time",
+    description: "The perfect game for catching up, laughing, and making new memories.",
+    categories: ["rapidfire", "saywhat", "awkward", "personality"]
   },
   {
     title: "Cards & Conversation",
     description: "Deal the cards and enjoy the conversation.",
-    categories: ["love", "character", "growth"]
+    categories: ["rapidfire", "awkward", "personality", "saywhat"]
   },
   {
-    title: "Puzzle Night",
+    title: "Puzzle & Conversation",
     description: "Build a puzzle together while the conversation unfolds.",
-    categories: ["memory", "childhood", "goals"]
+    categories: ["storytime", "memory", "childhood", "movingtoward"]
+  },
+  {
+    title: "Story Time",
+    description: "Share the moments that shaped you, made you laugh, and changed your life.",
+    categories: ["storytime", "memory", "childhood"]
+  },
+  {
+    title: "Dream Big",
+    description: "Talk about your goals, dreams, and where life is taking you.",
+    categories: ["movingtoward", "goals", "growth", "reallife"]
+  },
+  {
+    title: "Life Lately",
+    description: "Catch up on what's happening in each other's lives.",
+    categories: ["everyday", "personality", "realtalk"]
+  },
+  {
+    title: "Deep Dive",
+    description: "Skip the small talk and have conversations that bring you closer.",
+    categories: ["character", "growth", "realtalk", "love"]
+  },
+  {
+    title: "Debate Time",
+    description: "Share opinions, hot takes, and see where everyone stands.",
+    categories: ["saywhat", "rapidfire", "entertainment"]
+  },
+  {
+    title: "Just for Singles",
+    description: "Perfect for getting to know someone, whether you're texting, meeting for the first time, or hanging out with other singles.",
+    categories: ["lovelies", "personality", "rapidfire", "saywhat", "awkward", "imagination", "everyday", "watching", "reallife", "entertainment", "movies", "movingtoward", "character"]
+  },
+  {
+    title: "What's Everyone Into?",
+    description: "Discover what everyone's watching, listening to, and loving lately.",
+    categories: ["movies", "entertainment", "watching"]
   },
   {
     title: "Roll the Dice",
-    description: "Roll the dice. The highest roll chooses the next question.",
-    categories: ["reflection", "habits", "heroes"]
-  },
-  {
-    title: "Popcorn & Questions",
-    description: "Make popcorn, grab your favorite snacks, and let the conversation begin.",
-    categories: ["movies", "entertainment", "imagination"]
-  },
-  {
-    title: "Couples Game Night",
-    description: "Invite another couple over and enjoy an evening of conversation together.",
-    categories: ["personality", "awkward", "entertainment"]
-  },
-  {
-    title: "Category Challenge",
-    description: "Choose one category and stay in it for the entire game. See where the conversation takes you.",
-    categories: ["character", "goals", "memory", "love"]
+    description: "Roll the dice. The player with the highest roll shuffles as many times as they like to find the next question.",
+    categories: []
   }
 ];
 
@@ -2556,7 +2581,15 @@ function getDailyQuestion(categoryId, questions, usedMap) {
 }
 
 function dayKey(dateLike) {
-  return new Date(dateLike).toISOString().slice(0, 10);
+  // Use the LOCAL calendar day, not UTC — toISOString() is UTC-based, which
+  // means a question answered in the evening (US timezones) can land on the
+  // "next day" from the app's perspective, making the streak look stuck or
+  // drop even though the user answered a question today.
+  const d = new Date(dateLike);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function computeStreak(usedMap) {
@@ -2866,6 +2899,7 @@ export default function App() {
   const [usedToast, setUsedToast] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
   const [surpriseQuestion, setSurpriseQuestion] = useState(null);
+  const [diceQuestion, setDiceQuestion] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
     try {
@@ -3168,7 +3202,7 @@ export default function App() {
                       ) : null;
                     })}
                   </div>
-                  <button onClick={() => setActiveGame(game)}
+                  <button onClick={() => { setActiveGame(game); if (game.categories.length === 0) setDiceQuestion(pickRandomAvailable(usedMap)); }}
                     style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "9px 18px", cursor: "pointer", textTransform: "uppercase", boxShadow: "0 3px 10px rgba(184,134,42,0.35)" }}>
                     ▶ Start This Game
                   </button>
@@ -3180,23 +3214,44 @@ export default function App() {
 
         {tab === "games" && activeGame && (
           <div style={{ animation: "fadeIn 0.3s ease" }}>
-            <button onClick={() => setActiveGame(null)} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "10px", color: colors.signOutColor, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
+            <button onClick={() => { setActiveGame(null); setDiceQuestion(null); }} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "10px", color: colors.signOutColor, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
               ← All Games
             </button>
-            <div style={{ marginBottom: "24px" }}>
-              <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300", color: colors.titleColor }}>{activeGame.title}</h2>
-              <p style={{ margin: 0, color: colors.subColor, fontSize: "13px" }}>{activeGame.description}</p>
+            <div style={{ marginBottom: "24px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+              <div>
+                <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300", color: colors.titleColor }}>{activeGame.title}</h2>
+                <p style={{ margin: 0, color: colors.subColor, fontSize: "13px" }}>{activeGame.description}</p>
+              </div>
+              {activeGame.categories.length === 0 && (
+                <button onClick={() => setDiceQuestion(pickRandomAvailable(usedMap))} style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", padding: "10px 16px", whiteSpace: "nowrap", boxShadow: "0 3px 12px rgba(184,134,42,0.35)" }}>
+                  🎲 {diceQuestion ? "Shuffle Again" : "Roll the Dice"}
+                </button>
+              )}
             </div>
-            {activeGame.categories.map(catId => {
-              const cat = ALL_CATEGORIES.find(c => c.id === catId);
-              if (!cat) return null;
-              const available = cat.questions.filter(q => isAvailable(usedMap, cat.id, q));
-              if (available.length === 0) return null;
-              return available.map((q, i) => (
-                <QuestionCard key={`${catId}-${i}`} question={q} category={cat} isUsed={false}
-                  onUse={(question) => handleUse(cat.id, question)} dm={dm} showLabel />
-              ));
-            })}
+            {activeGame.categories.length === 0 ? (
+              // Roll the Dice — draws from every category, one question at a time,
+              // with an unlimited shuffle so the highest roller can reshuffle until
+              // they find a question they like.
+              diceQuestion ? (
+                <QuestionCard question={diceQuestion.question} category={diceQuestion.category} isUsed={!isAvailable(usedMap, diceQuestion.category.id, diceQuestion.question)}
+                  onUse={(q) => handleUse(diceQuestion.category.id, q)} dm={dm} showLabel />
+              ) : (
+                <div style={{ textAlign: "center", padding: "48px 24px", color: dm ? "#a4805a" : "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
+                  All questions have been answered. They'll return over the next 180 days.
+                </div>
+              )
+            ) : (
+              activeGame.categories.map(catId => {
+                const cat = ALL_CATEGORIES.find(c => c.id === catId);
+                if (!cat) return null;
+                const available = cat.questions.filter(q => isAvailable(usedMap, cat.id, q));
+                if (available.length === 0) return null;
+                return available.map((q, i) => (
+                  <QuestionCard key={`${catId}-${i}`} question={q} category={cat} isUsed={false}
+                    onUse={(question) => handleUse(cat.id, question)} dm={dm} showLabel />
+                ));
+              })
+            )}
           </div>
         )}
       </div>
