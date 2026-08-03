@@ -2620,6 +2620,24 @@ function pickRandomAvailable(usedMap) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+// Same as pickRandomAvailable, but scoped to a specific set of category ids —
+// used by each game's shuffle button so it only pulls from that game's
+// categories. An empty categoryIds array (Roll the Dice) falls back to
+// drawing from every category.
+function pickRandomAvailableInCategories(usedMap, categoryIds) {
+  if (!categoryIds || categoryIds.length === 0) return pickRandomAvailable(usedMap);
+  const pool = [];
+  categoryIds.forEach((id) => {
+    const cat = ALL_CATEGORIES.find((c) => c.id === id);
+    if (!cat) return;
+    cat.questions.forEach((q) => {
+      if (isAvailable(usedMap, cat.id, q)) pool.push({ category: cat, question: q });
+    });
+  });
+  if (pool.length === 0) return null;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 // ─── AUTH SCREEN ──────────────────────────────────────────────────────────────
 function AuthScreen() {
   const [email, setEmail] = useState("");
@@ -2899,7 +2917,7 @@ export default function App() {
   const [usedToast, setUsedToast] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
   const [surpriseQuestion, setSurpriseQuestion] = useState(null);
-  const [diceQuestion, setDiceQuestion] = useState(null);
+  const [gameQuestion, setGameQuestion] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
     try {
@@ -3202,7 +3220,7 @@ export default function App() {
                       ) : null;
                     })}
                   </div>
-                  <button onClick={() => { setActiveGame(game); if (game.categories.length === 0) setDiceQuestion(pickRandomAvailable(usedMap)); }}
+                  <button onClick={() => { setActiveGame(game); setGameQuestion(pickRandomAvailableInCategories(usedMap, game.categories)); }}
                     style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "9px 18px", cursor: "pointer", textTransform: "uppercase", boxShadow: "0 3px 10px rgba(184,134,42,0.35)" }}>
                     ▶ Start This Game
                   </button>
@@ -3214,43 +3232,39 @@ export default function App() {
 
         {tab === "games" && activeGame && (
           <div style={{ animation: "fadeIn 0.3s ease" }}>
-            <button onClick={() => { setActiveGame(null); setDiceQuestion(null); }} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "10px", color: colors.signOutColor, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
+            <button onClick={() => { setActiveGame(null); setGameQuestion(null); }} style={{ background: colors.signOutBg, border: `1px solid ${colors.signOutBorder}`, borderRadius: "10px", color: colors.signOutColor, cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", padding: "8px 16px", marginBottom: "24px" }}>
               ← All Games
             </button>
-            <div style={{ marginBottom: "24px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+            <div style={{ marginBottom: "16px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
               <div>
                 <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontWeight: "300", color: colors.titleColor }}>{activeGame.title}</h2>
                 <p style={{ margin: 0, color: colors.subColor, fontSize: "13px" }}>{activeGame.description}</p>
               </div>
-              {activeGame.categories.length === 0 && (
-                <button onClick={() => setDiceQuestion(pickRandomAvailable(usedMap))} style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", padding: "10px 16px", whiteSpace: "nowrap", boxShadow: "0 3px 12px rgba(184,134,42,0.35)" }}>
-                  🎲 {diceQuestion ? "Shuffle Again" : "Roll the Dice"}
-                </button>
-              )}
+              <button onClick={() => setGameQuestion(pickRandomAvailableInCategories(usedMap, activeGame.categories))} style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", padding: "10px 16px", whiteSpace: "nowrap", boxShadow: "0 3px 12px rgba(184,134,42,0.35)" }}>
+                {activeGame.title === "Roll the Dice"
+                  ? `🎲 ${gameQuestion ? "Shuffle Again" : "Roll the Dice"}`
+                  : (gameQuestion ? "Shuffle Again" : "Shuffle")}
+              </button>
             </div>
-            {activeGame.categories.length === 0 ? (
-              // Roll the Dice — draws from every category, one question at a time,
-              // with an unlimited shuffle so the highest roller can reshuffle until
-              // they find a question they like.
-              diceQuestion ? (
-                <QuestionCard question={diceQuestion.question} category={diceQuestion.category} isUsed={!isAvailable(usedMap, diceQuestion.category.id, diceQuestion.question)}
-                  onUse={(q) => handleUse(diceQuestion.category.id, q)} dm={dm} showLabel />
-              ) : (
-                <div style={{ textAlign: "center", padding: "48px 24px", color: dm ? "#a4805a" : "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
-                  All questions have been answered. They'll return over the next 180 days.
-                </div>
-              )
+            {activeGame.categories.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "20px" }}>
+                {activeGame.categories.map((catId, j) => {
+                  const cat = ALL_CATEGORIES.find(c => c.id === catId);
+                  return cat ? (
+                    <span key={j} style={{ background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.08)", border: "1px solid rgba(184,134,42,0.3)", borderRadius: "4px", fontSize: "10px", color: dm ? "#d4a84e" : "#b8862a", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", padding: "2px 8px" }}>
+                      {cat.label}
+                    </span>
+                  ) : null;
+                })}
+              </div>
+            )}
+            {gameQuestion ? (
+              <QuestionCard question={gameQuestion.question} category={gameQuestion.category} isUsed={!isAvailable(usedMap, gameQuestion.category.id, gameQuestion.question)}
+                onUse={(q) => handleUse(gameQuestion.category.id, q)} dm={dm} showLabel />
             ) : (
-              activeGame.categories.map(catId => {
-                const cat = ALL_CATEGORIES.find(c => c.id === catId);
-                if (!cat) return null;
-                const available = cat.questions.filter(q => isAvailable(usedMap, cat.id, q));
-                if (available.length === 0) return null;
-                return available.map((q, i) => (
-                  <QuestionCard key={`${catId}-${i}`} question={q} category={cat} isUsed={false}
-                    onUse={(question) => handleUse(cat.id, question)} dm={dm} showLabel />
-                ));
-              })
+              <div style={{ textAlign: "center", padding: "48px 24px", color: dm ? "#a4805a" : "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
+                All questions in these categories have been answered. They'll return over the next 180 days.
+              </div>
             )}
           </div>
         )}
