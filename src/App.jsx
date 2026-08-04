@@ -2195,6 +2195,11 @@ const ALL_CATEGORIES = [
       "What's something you're still growing into?",
       "What's something you're learning to be okay with?",
       "What's something you're continuing to work on?",
+    ],
+  },
+  {
+    id: "outofnowhere", label: "Out of Nowhere", color: "#fff6f0", accent: "#8c5a30",
+    questions: [
       "If you could restart your life at any age, would you, and when?",
       "What's something you believe that most people would question?",
       "Be honest, what's something you avoid thinking about?",
