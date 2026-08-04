@@ -2729,6 +2729,15 @@ function pickRandomAvailableInCategories(usedMap, categoryIds) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+// Picks a random still-available Date Idea. Used by the Date Ideas shuffle
+// button so couples can shuffle until they find one they want, instead of
+// scrolling the full list.
+function pickRandomDateIdea(usedMap) {
+  const available = DATE_IDEAS.filter((d) => isAvailable(usedMap, "date_ideas", d));
+  if (available.length === 0) return null;
+  return available[Math.floor(Math.random() * available.length)];
+}
+
 // ─── AUTH SCREEN ──────────────────────────────────────────────────────────────
 function AuthScreen() {
   const [email, setEmail] = useState("");
@@ -3009,6 +3018,7 @@ export default function App() {
   const [activeGame, setActiveGame] = useState(null);
   const [surpriseQuestion, setSurpriseQuestion] = useState(null);
   const [gameQuestion, setGameQuestion] = useState(null);
+  const [shuffledDateIdea, setShuffledDateIdea] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
     try {
@@ -3118,6 +3128,7 @@ export default function App() {
   const streak = computeStreak(usedMap);
 
   const handleSurpriseMe = () => setSurpriseQuestion(pickRandomAvailable(usedMap));
+  const handleShuffleDateIdea = () => setShuffledDateIdea(pickRandomDateIdea(usedMap));
 
   if (authLoading) return (
     <div style={{ height: "100vh", minHeight: "100vh", background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", overscrollBehavior: "none" }}>
@@ -3260,6 +3271,38 @@ export default function App() {
               <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Date Ideas</h2>
               <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>Select one when you've done it — it returns in 180 days so you can enjoy it again.</p>
             </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <button onClick={handleShuffleDateIdea}
+                style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", padding: "10px 16px", boxShadow: "0 3px 12px rgba(184,134,42,0.35)" }}>
+                Shuffle
+              </button>
+              <p style={{ margin: "8px 0 0 0", fontSize: "12px", color: colors.subColor, fontFamily: "'DM Sans', sans-serif", fontStyle: "italic" }}>
+                Shuffle until you discover something you want to do.
+              </p>
+            </div>
+
+            {shuffledDateIdea && (
+              <div style={{ background: dm ? "#231408" : "#fff", border: "2px solid #b8862a", borderRadius: "14px", marginBottom: "20px", overflow: "hidden", boxShadow: dm ? "none" : "0 4px 20px rgba(184,134,42,0.15)" }}>
+                <div style={{ height: "3px", background: "linear-gradient(90deg, #b8862a, #d4a84e, #b8862a)" }} />
+                <div style={{ padding: "18px 20px" }}>
+                  <p style={{ margin: "0 0 16px 0", color: dm ? "#f0d9b8" : "#2c1a0e", fontSize: "15px", lineHeight: "1.6", fontFamily: "'DM Sans', sans-serif", fontWeight: "300" }}>
+                    {shuffledDateIdea}
+                  </p>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button onClick={() => { handleUse("date_ideas", shuffledDateIdea); setShuffledDateIdea(null); }}
+                      style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "8px", color: "#fff", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", cursor: "pointer", textTransform: "uppercase", boxShadow: "0 3px 10px rgba(184,134,42,0.35)" }}>
+                      Select
+                    </button>
+                    <button onClick={handleShuffleDateIdea}
+                      style={{ background: "transparent", border: "1px solid rgba(184,134,42,0.4)", borderRadius: "8px", color: "#b8862a", cursor: "pointer", fontSize: "11px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.06em", padding: "8px 16px", textTransform: "uppercase" }}>
+                      Shuffle Again
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "#a08060", fontFamily: "'DM Sans', sans-serif" }}>
               {DATE_IDEAS.filter(d => isAvailable(usedMap, "date_ideas", d)).length} of {DATE_IDEAS.length} available
             </p>
