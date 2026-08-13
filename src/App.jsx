@@ -3259,7 +3259,7 @@ function CouplesTherapySectionOverview({ dm, colors, journey, onSelectSection, o
   );
 }
 
-function CouplesTherapyQuestionScreen({ dm, colors, section, questionIndex, onBack, onNext }) {
+function CouplesTherapyQuestionScreen({ dm, colors, section, questionIndex, isCompleted, onBack, onNext, onPrevQuestion }) {
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px", marginBottom: "14px" }}>
@@ -3278,12 +3278,28 @@ function CouplesTherapyQuestionScreen({ dm, colors, section, questionIndex, onBa
         <p style={{ margin: 0, fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "17px", lineHeight: "1.7", color: colors.questionText }}>
           {section.questions[questionIndex]}
         </p>
-        <div style={{ display: "inline-block", marginTop: "18px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "600", color: dm ? "#d4a84e" : "#8a6220", background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.1)", borderRadius: "6px", padding: "4px 10px" }}>
-          Discuss this together — no rush
-        </div>
+        {isCompleted ? (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginTop: "18px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "0.04em", textTransform: "uppercase", color: "#b8862a", background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.1)", borderRadius: "6px", padding: "4px 10px" }}>
+            ✓ Completed
+          </div>
+        ) : (
+          <div style={{ display: "inline-block", marginTop: "18px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "600", color: dm ? "#d4a84e" : "#8a6220", background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.1)", borderRadius: "6px", padding: "4px 10px" }}>
+            Discuss this together — no rush
+          </div>
+        )}
       </div>
-      <button onClick={onNext} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginTop: "16px", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
-        Next
+      {questionIndex > 0 && (
+        <button onClick={onPrevQuestion} style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: colors.subColor, cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px" }}>
+          ← Previous question
+        </button>
+      )}
+      {!isCompleted && (
+        <p style={{ margin: "18px 0 8px 0", textAlign: "center", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", lineHeight: "1.6", color: colors.subColor }}>
+          Only mark this complete once you've actually talked it through together — the next question won't appear until you do.
+        </p>
+      )}
+      <button onClick={onNext} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginTop: isCompleted ? "16px" : "0", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
+        {isCompleted ? "Next question →" : "We've Discussed This — Mark Complete"}
       </button>
     </div>
   );
@@ -3448,6 +3464,7 @@ export default function App() {
   const [ctSaving, setCtSaving] = useState(false);
   const [ctReviewJourney, setCtReviewJourney] = useState(null);
   const [ctReviewSection, setCtReviewSection] = useState(null);
+  const [ctError, setCtError] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
     try {
@@ -3578,6 +3595,10 @@ export default function App() {
         };
       });
       setCtJourneys(journeys);
+      if (journeysRes.error || actionsRes.error) {
+        console.error("Couples Therapy: failed to load", journeysRes.error, actionsRes.error);
+        setCtError((journeysRes.error || actionsRes.error)?.message || "Couldn't load Couples Therapy. Check that the couples_therapy_journeys and couples_therapy_actions tables exist in Supabase with owner-only RLS enabled.");
+      }
       setCtDataLoading(false);
     });
   }, [session]);
@@ -3600,6 +3621,7 @@ export default function App() {
     if (!session) return;
     markCtOnboardingSeen();
     setCtShowOnboarding(false);
+    setCtError("");
     if (ctActiveJourney) { setCtView("overview"); return; }
     const nextJourneyNumber = ctJourneys.length > 0 ? Math.max(...ctJourneys.map((j) => j.journey_number)) + 1 : 1;
     const { data, error } = await supabase.from("couples_therapy_journeys").insert({
@@ -3610,6 +3632,9 @@ export default function App() {
     if (!error && data) {
       setCtJourneys((prev) => [...prev, { ...data, actions: {} }]);
       setCtView("overview");
+    } else {
+      console.error("Couples Therapy: failed to start journey", error);
+      setCtError(error?.message || "Couldn't start your Couples Therapy journey. Check that the couples_therapy_journeys and couples_therapy_actions tables exist in Supabase with owner-only RLS enabled.");
     }
   };
 
@@ -3639,13 +3664,24 @@ export default function App() {
     if (!ctActiveJourney) return;
     const section = COUPLES_THERAPY_SECTIONS.find((s) => s.number === ctActiveJourney.current_section);
     const nextIndex = ctQuestionIndex + 1;
+    // Saved progress only ever moves forward to the furthest question reached —
+    // stepping back to review earlier questions never regresses the resume point.
+    const furthest = ctActiveJourney.current_question_index || 0;
+    const newFurthest = Math.max(furthest, nextIndex);
     if (nextIndex >= section.questions.length) {
-      await ctPersistProgress(ctActiveJourney.id, { current_question_index: nextIndex });
+      if (newFurthest !== furthest) await ctPersistProgress(ctActiveJourney.id, { current_question_index: newFurthest });
       setCtView("action");
     } else {
       setCtQuestionIndex(nextIndex);
-      await ctPersistProgress(ctActiveJourney.id, { current_question_index: nextIndex });
+      if (newFurthest !== furthest) await ctPersistProgress(ctActiveJourney.id, { current_question_index: newFurthest });
     }
+  };
+
+  // Stepping back only changes what's on screen — it never touches saved progress,
+  // so leaving the app after reviewing an earlier question still resumes at the
+  // furthest point the couple actually reached.
+  const ctGoBackQuestion = () => {
+    setCtQuestionIndex((prev) => Math.max(0, prev - 1));
   };
 
   const ctCompleteSection = async () => {
@@ -3970,6 +4006,11 @@ export default function App() {
 
         {tab === "couplesTherapy" && (
           <div>
+            {ctError && (
+              <div style={{ background: dm ? "rgba(210,80,80,0.12)" : "rgba(210,80,80,0.08)", border: "1px solid rgba(210,80,80,0.35)", borderRadius: "10px", padding: "12px 14px", marginBottom: "16px", fontFamily: "'DM Sans', sans-serif", fontSize: "12px", color: dm ? "#f0a8a8" : "#a03030" }}>
+                {ctError}
+              </div>
+            )}
             {ctDataLoading ? (
               <div style={{ textAlign: "center", padding: "48px 24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic" }}>Loading…</div>
             ) : ctShowOnboarding || (!ctActiveJourney && !ctOnboardingSeen) ? (
@@ -3990,7 +4031,7 @@ export default function App() {
             ) : ctView === "overview" ? (
               <CouplesTherapySectionOverview dm={dm} colors={colors} journey={ctActiveJourney} onSelectSection={ctSelectSection} onShowOnboarding={() => setCtShowOnboarding(true)} />
             ) : ctView === "question" ? (
-              <CouplesTherapyQuestionScreen dm={dm} colors={colors} section={COUPLES_THERAPY_SECTIONS.find(s => s.number === ctActiveJourney.current_section)} questionIndex={ctQuestionIndex} onBack={() => setCtView("overview")} onNext={ctAdvanceQuestion} />
+              <CouplesTherapyQuestionScreen dm={dm} colors={colors} section={COUPLES_THERAPY_SECTIONS.find(s => s.number === ctActiveJourney.current_section)} questionIndex={ctQuestionIndex} isCompleted={ctQuestionIndex < (ctActiveJourney.current_question_index || 0)} onBack={() => setCtView("overview")} onNext={ctAdvanceQuestion} onPrevQuestion={ctGoBackQuestion} />
             ) : (
               <CouplesTherapyActionScreen dm={dm} colors={colors}
                 section={COUPLES_THERAPY_SECTIONS.find(s => s.number === (ctReviewSection || ctActiveJourney.current_section))}
