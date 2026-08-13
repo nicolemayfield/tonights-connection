@@ -15,6 +15,30 @@
 //      so upsert works correctly. Go to the table → Indexes → Add index, check "unique".
 //    - Go to Settings → API → copy your Project URL and anon/public key
 //
+// COUPLES THERAPY TABLES (separate feature — own journey system, no 180-day reset):
+//    Table "couples_therapy_journeys":
+//        id                      (int8, primary key, auto-increment)
+//        user_id                 (text, not null)
+//        journey_number          (int4, not null)
+//        status                  (text, not null)              -- 'active' | 'complete'
+//        started_at              (timestamptz, default: now())
+//        completed_at            (timestamptz, nullable)
+//        current_section         (int4, default: 1)
+//        current_question_index  (int4, default: 0)
+//        completed_sections      (jsonb, default: '[]')
+//        section_completion_dates (jsonb, default: '{}')
+//    Table "couples_therapy_actions":
+//        id                      (int8, primary key, auto-increment)
+//        user_id                 (text, not null)
+//        journey_id              (int8, not null, references couples_therapy_journeys.id)
+//        section_number          (int4, not null)
+//        person_1_response       (text)
+//        person_2_response       (text)
+//        completed_at            (timestamptz, default: now())
+//    - Add a UNIQUE constraint on (user_id, journey_id, section_number) for the actions table.
+//    - Apply the same owner-only RLS policy used for used_questions to both new tables:
+//        auth.uid()::text = user_id
+//
 // 2. In Vercel, set these Environment Variables (Settings → Environment Variables):
 //    VITE_SUPABASE_URL      = your Supabase project URL
 //    VITE_SUPABASE_ANON_KEY = your Supabase anon key
@@ -2659,6 +2683,156 @@ const CONVERSATION_GAMES = [
   }
 ];
 
+// ─── COUPLES THERAPY (separate journey system — never merged with the question bank) ──
+const COUPLES_THERAPY_SECTIONS = [
+  {
+    number: 1, name: "Self-Discovery",
+    intent: "Discover who we are individually, beyond the roles we play and what others may already know about us.",
+    questions: [
+      "Who are you when you feel most like yourself, and what brings that version of you to the surface?",
+      "What are the values, qualities, beliefs, and parts of yourself that you consider most essential to who you are?",
+      "What is something about yourself that you deeply value, and something about yourself that you are still learning to understand?"
+    ],
+    actionTitle: "Show Me You Know Me",
+    actionDescription: "Based on everything you learned about your partner during this section, do something intentional that shows them you understand who they are as an individual. Plan a date they would genuinely enjoy, prepare something meaningful, give them a thoughtful gift, create an experience around something they love, or choose another way to make them feel seen for who they are.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 2, name: "What Shaped Us Individually",
+    intent: "Explore the experiences, relationships, environments, and significant moments that helped shape each person into who they are today.",
+    questions: [
+      "What experiences from your childhood, family, relationships, health, friendships, or life have had the greatest influence on the person you became?",
+      "What did those experiences teach you about yourself, other people, love, trust, safety, or relationships?",
+      "Is there an experience from your past that you believe helps explain something important about the way you show up today?"
+    ],
+    actionTitle: "Enter My World",
+    actionDescription: "Choose one meaningful part of your partner's story that you learned about during this section and create an experience that honors it. This could mean revisiting a meaningful place, looking through old photographs together, learning more about an important part of their history, recreating a meaningful experience, or simply creating intentional time for them to tell you more about it.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 3, name: "What We Carry Individually",
+    intent: "Explore what each person may still be carrying from their past and how those experiences may continue to influence the present.",
+    questions: [
+      "What from your past do you recognize that you are still carrying with you today?",
+      "When something in your present life feels especially intense, what past experience, fear, belief, or wound might be connected to that feeling?",
+      "Is there something you have been holding onto that you would like to understand, release, heal, or make peace with?"
+    ],
+    actionTitle: "Create Space for What I Carry",
+    actionDescription: "Choose one thing your partner shared that you now understand more deeply. Create an intentional experience that communicates, \"You can bring this part of yourself into this relationship.\" Need an idea? Try creating a quiet, private space for them to talk more without feeling rushed, doing something comforting you know helps them feel safe, or writing them a note acknowledging what they shared. Choose an action that feels genuine and meaningful based on what they shared.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 4, name: "How We Show Up Individually",
+    intent: "Understand how our experiences, beliefs, needs, and protective patterns influence the way each of us behaves in relationships.",
+    questions: [
+      "When you feel loved, safe, understood, or connected, how do you naturally show up?",
+      "When you feel hurt, misunderstood, rejected, overwhelmed, or emotionally unsafe, how do you tend to respond?",
+      "What do you recognize about the way you communicate, protect yourself, give love, receive love, or handle difficult moments that you want your partner to understand?"
+    ],
+    actionTitle: "Help Your Partner Feel Loved, Safe, Understood, and Connected",
+    actionDescription: "Based on what you learned about how your partner naturally shows up when they feel loved, safe, understood, or connected, intentionally do something that helps them experience those feelings. Check in and genuinely ask how they're feeling, give them your undivided attention, offer affection in a way they enjoy, tell them specifically what you appreciate, do something thoughtful without being asked, or ask, \"What would help you feel connected to me today?\"",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 5, name: "Understanding Us",
+    intent: "Explore what happens when two individual people, with two different histories and perspectives, come together.",
+    questions: [
+      "What do you think brought the two of us together, beyond attraction or circumstance?",
+      "What do we naturally bring out in each other, both individually and as a couple?",
+      "What have you discovered about yourself because of being in this relationship that you may not have discovered on your own?"
+    ],
+    actionTitle: "Create a Shared Experience",
+    actionDescription: "Create an experience that reflects something special about the two of you. It could be revisiting where you first connected, recreating a favorite memory, trying something completely new together, or creating a new tradition that belongs only to the two of you.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 6, name: "Seeing Each Other Clearly",
+    intent: "Move beyond what we assume we know about our partner and create space to truly see the person in front of us.",
+    questions: [
+      "What is something about your partner that you understand differently now than you did when you first got to know them?",
+      "What is something you see in your partner that you believe they may not fully see in themselves?",
+      "What is something you want your partner to know about the way you see them?"
+    ],
+    actionTitle: "I Now See You As...",
+    actionDescription: "Write your partner's name at the top of a piece of paper. Then write: \"I now see [Partner's Name] as...\" and write at least five things you now see more clearly about your partner after everything you've discovered so far. There is no maximum. When you're finished, exchange your lists and read what your partner wrote about you.",
+    person1Label: "What did you write?", person2Label: "What did you write?"
+  },
+  {
+    number: 7, name: "Our Patterns",
+    intent: "Recognize the recurring dynamics that develop when two people interact, and understand what may be underneath those patterns.",
+    questions: [
+      "What pattern do you notice happening repeatedly between us?",
+      "What usually happens inside each of us before this pattern begins, and how does each of us tend to respond once it starts?",
+      "What do you think this pattern may be trying to tell us about ourselves, each other, or what our relationship needs?"
+    ],
+    actionTitle: "Change the Pattern",
+    actionDescription: "Choose one recurring pattern you've identified together. Create a specific agreement for what each person will do the next time the pattern begins. Then practice that new response the next time the opportunity naturally arises.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 8, name: "What We Need From Each Other",
+    intent: "Discover how each person experiences love, connection, support, affection, reassurance, and emotional closeness.",
+    questions: [
+      "What makes you feel most loved, valued, appreciated, and emotionally connected to your partner?",
+      "When life becomes difficult, what do you most need from your partner?",
+      "What is something you need more of from your relationship?",
+      "What do you wish your partner understood about how you need to be loved?",
+      "What is one need you have that you may have difficulty asking for?"
+    ],
+    actionTitle: "Love Me Intentionally",
+    actionDescription: "Each person chooses one need their partner expressed during this section and intentionally meets that need in a way that feels meaningful to them.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 9, name: "Our Preferences",
+    intent: "Discover the practical details that make each person feel comfortable, connected, respected, and fulfilled within a shared life.",
+    questions: [
+      "What are your preferences around communication, quality time, affection, personal space, and time together?",
+      "What are your preferences around the practical parts of sharing a life, such as money, home responsibilities, family, friendships, social life, routines, travel, and work?",
+      "Where do our preferences naturally align, and where are our differences important for us to understand and intentionally navigate?",
+      "What does an ideal ordinary day together look like to you?",
+      "What are the little things that make a relationship feel especially good to you?"
+    ],
+    actionTitle: "Create Our Ideal Day",
+    actionDescription: "Design and experience an ideal ordinary day together using what you learned about each other's preferences. Each person should intentionally incorporate things that make the other person feel comfortable, connected, appreciated, or happy.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 10, name: "Our Foundation",
+    intent: "Define what we want our relationship to stand on before we begin building its future.",
+    questions: [
+      "What values do we want our relationship to represent?",
+      "What do we want to protect within our relationship regardless of what life brings us?",
+      "What does commitment mean to each of us, and what do we believe we owe each other within a committed relationship?",
+      "What kind of environment do we want to create for each other, emotionally, mentally, physically, and within our shared life?",
+      "If we could describe the foundation of our relationship in a few words, what would we want those words to be?"
+    ],
+    actionTitle: "Build Our Foundation",
+    actionDescription: "Together, create a tangible representation of your relationship foundation. Write down the values, principles, commitments, or words you both want your relationship to stand on. Give it a name, display it somewhere meaningful, save it somewhere you'll both have access to, or create something else that represents the foundation you've chosen together.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  },
+  {
+    number: 11, name: "What We Want to Build Together",
+    intent: "Move beyond understanding and alignment into dreaming, imagining, planning, and creating the life you want together.",
+    questions: [
+      "If we could design our ideal life together, what would it look and feel like?",
+      "What kind of home and environment do we want to create together?",
+      "What experiences, adventures, and memories do we want to have together?",
+      "Where do we want to go, and what do we want to see or experience in the world?",
+      "What do we want our financial life to look like, and what does financial freedom mean to us?",
+      "What do we want our family life to look like?",
+      "What do we want to create, accomplish, contribute, or build together?",
+      "How do we want each of us to grow individually while continuing to grow together?",
+      "What do we want our relationship to feel like years from now, and what do we want to be able to say about the life we've built?",
+      "If we gave ourselves permission to dream without limiting ourselves by what seems possible today, what would we build together?"
+    ],
+    actionTitle: "Start Building the Dream",
+    actionDescription: "Choose one dream you've discovered together during this section and take your first tangible step toward making it real. Don't simply talk about it. Do something. Research it. Plan it. Save toward it. Create it. Book it. Build it. Make a vision board. Open an account. Schedule the experience. Begin the project. Take whatever first step belongs to the dream you've chosen.",
+    person1Label: "What did you do?", person2Label: "What did you do?"
+  }
+];
+const COUPLES_THERAPY_SECTION_COUNT = COUPLES_THERAPY_SECTIONS.length;
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function isAvailable(usedMap, categoryId, questionText) {
   const key = `${categoryId}::${questionText}`;
@@ -3010,6 +3184,245 @@ function PasswordSetup({ onComplete }) {
   );
 }
 
+// ─── COUPLES THERAPY COMPONENTS ────────────────────────────────────────────────
+function CouplesTherapyOnboarding({ dm, colors, onBegin }) {
+  return (
+    <div style={{ animation: "fadeIn 0.4s ease" }}>
+      <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
+        Couples Therapy
+      </div>
+      <h2 style={{ margin: "0 0 14px 0", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "28px", fontWeight: "400", color: colors.titleColor, lineHeight: "1.25" }}>
+        A Deeper Way to Discover Each Other
+      </h2>
+      {[
+        "Welcome to Couples Therapy, a guided experience designed to help two people slow down, go deeper, and discover themselves and each other in a way that strengthens the relationship they're building together.",
+        "This experience begins with you. Before focusing on what you need from each other, you'll spend time discovering who you are individually — what shaped you, what you carry, and how those things influence the way you show up in a relationship. Then you'll turn that same depth of discovery toward each other.",
+        "You'll move through 11 sections, each building on the one before it, in order — from self-discovery through to dreaming about the life you want to build together. Take your time with every question. Sit with it. Talk about it. Listen to each other.",
+        "At the end of every section, you'll receive an action step — an actual activity for the two of you to complete together. Both Person 1 and Person 2 must complete the action and record what they did before the next section unlocks. This isn't a place to skip ahead; the sequence is part of the experience.",
+        "Your progress is tracked separately in the Couples Therapy Progress tab, so you can always see where you are, what you've completed, and how your journey has evolved.",
+        "Once you complete all 11 sections, the full experience becomes available again — whenever you're ready to return, reconnect, and see what new answers emerge. The questions may be the same, but you won't always be the same people answering them."
+      ].map((p, i) => (
+        <p key={i} style={{ margin: "0 0 14px 0", color: colors.subColor, fontSize: "13px", lineHeight: "1.75", fontFamily: "'DM Sans', sans-serif" }}>{p}</p>
+      ))}
+      <button onClick={onBegin} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginTop: "8px", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
+        Begin Couples Therapy
+      </button>
+    </div>
+  );
+}
+
+function CouplesTherapySectionOverview({ dm, colors, journey, onSelectSection, onShowOnboarding }) {
+  const completedCount = journey.completed_sections.length;
+  return (
+    <div style={{ animation: "fadeIn 0.4s ease" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "6px" }}>
+        <h2 style={{ margin: 0, fontFamily: "'Cormorant Garamond', serif", fontSize: "28px", fontWeight: "300", color: colors.titleColor }}>
+          Couples Therapy{journey.journey_number > 1 ? ` · Journey ${journey.journey_number}` : ""}
+        </h2>
+        <button onClick={onShowOnboarding} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", padding: "4px", whiteSpace: "nowrap" }}>
+          About
+        </button>
+      </div>
+      <p style={{ margin: "0 0 8px 0", color: colors.subColor, fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>
+        {completedCount} of {COUPLES_THERAPY_SECTION_COUNT} sections complete
+      </p>
+      <div style={{ height: "4px", borderRadius: "4px", background: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.15)", overflow: "hidden", marginBottom: "20px" }}>
+        <div style={{ height: "100%", width: `${(completedCount / COUPLES_THERAPY_SECTION_COUNT) * 100}%`, background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
+      </div>
+      {COUPLES_THERAPY_SECTIONS.map((section) => {
+        const isComplete = journey.completed_sections.includes(section.number);
+        const isCurrent = !isComplete && section.number === journey.current_section;
+        const isLocked = !isComplete && !isCurrent;
+        const completedDate = journey.section_completion_dates?.[section.number];
+        return (
+          <button key={section.number} onClick={() => { if (!isLocked) onSelectSection(section.number, isComplete); }}
+            disabled={isLocked}
+            style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: `1px solid ${dm ? "rgba(245,230,200,0.08)" : "rgba(139,90,43,0.1)"}`, padding: "13px 4px", cursor: isLocked ? "default" : "pointer" }}>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", color: isLocked ? (dm ? "#4a4438" : "#c4b8a4") : "#b8862a", width: "24px", flexShrink: 0 }}>
+              {section.number}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: isLocked ? (dm ? "#7a7060" : "#b0a894") : colors.titleColor }}>
+                {section.name}
+              </div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", color: colors.subColor, marginTop: "2px" }}>
+                {isComplete ? `Completed ${completedDate ? new Date(completedDate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : ""}` : isCurrent ? "Current" : "Locked"}
+              </div>
+            </div>
+            <div style={{ fontSize: "14px", color: isComplete ? "#b8862a" : (dm ? "#4a4438" : "#c4b8a4"), flexShrink: 0 }}>
+              {isComplete ? "✓" : isLocked ? "🔒" : "●"}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function CouplesTherapyQuestionScreen({ dm, colors, section, questionIndex, onBack, onNext }) {
+  return (
+    <div style={{ animation: "fadeIn 0.3s ease" }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px", marginBottom: "14px" }}>
+        ← Sections
+      </button>
+      <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "8px" }}>
+        {section.name}
+      </div>
+      <div style={{ height: "4px", borderRadius: "4px", background: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.15)", overflow: "hidden", marginBottom: "18px" }}>
+        <div style={{ height: "100%", width: `${((questionIndex + 1) / section.questions.length) * 100}%`, background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
+      </div>
+      <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "14px", padding: "28px 22px" }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", color: "#b8862a", marginBottom: "14px" }}>
+          Question {questionIndex + 1} of {section.questions.length}
+        </div>
+        <p style={{ margin: 0, fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "17px", lineHeight: "1.7", color: colors.questionText }}>
+          {section.questions[questionIndex]}
+        </p>
+        <div style={{ display: "inline-block", marginTop: "18px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "600", color: dm ? "#d4a84e" : "#8a6220", background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.1)", borderRadius: "6px", padding: "4px 10px" }}>
+          Discuss this together — no rush
+        </div>
+      </div>
+      <button onClick={onNext} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginTop: "16px", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
+        Next
+      </button>
+    </div>
+  );
+}
+
+function CouplesTherapyActionScreen({ dm, colors, section, person1Response, person2Response, onChangePerson1, onChangePerson2, onComplete, onBack, saving, readOnly }) {
+  const canComplete = person1Response.trim().length > 0 && person2Response.trim().length > 0;
+  const inputStyle = { width: "100%", minHeight: "70px", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", padding: "10px 12px", resize: "none", outline: "none", color: colors.questionText };
+  return (
+    <div style={{ animation: "fadeIn 0.3s ease" }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px", marginBottom: "14px" }}>
+        ← Sections
+      </button>
+      <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "8px" }}>
+        Section {section.number} · Action Step
+      </div>
+      <h2 style={{ margin: "0 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontWeight: "300", fontSize: "24px", color: colors.titleColor }}>
+        {section.actionTitle}
+      </h2>
+      <p style={{ margin: "0 0 16px 0", color: colors.subColor, fontSize: "13px", lineHeight: "1.7", fontFamily: "'DM Sans', sans-serif" }}>
+        {section.actionDescription}
+      </p>
+      <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "16px" }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a", marginBottom: "6px" }}>
+          Person 1 — {section.person1Label}
+        </div>
+        <textarea style={inputStyle} value={person1Response} readOnly={readOnly} placeholder="Type your response…" onChange={(e) => onChangePerson1(e.target.value)} />
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a", margin: "14px 0 6px" }}>
+          Person 2 — {section.person2Label}
+        </div>
+        <textarea style={inputStyle} value={person2Response} readOnly={readOnly} placeholder="Type your response…" onChange={(e) => onChangePerson2(e.target.value)} />
+      </div>
+      {!readOnly && (
+        <>
+          <button onClick={onComplete} disabled={!canComplete || saving} style={{ width: "100%", background: canComplete ? "linear-gradient(135deg, #b8862a, #d4a84e)" : (dm ? "rgba(184,134,42,0.25)" : "rgba(184,134,42,0.3)"), border: "none", borderRadius: "12px", color: canComplete ? "#fff" : (dm ? "rgba(245,230,200,0.4)" : "rgba(255,255,255,0.7)"), cursor: canComplete && !saving ? "pointer" : "not-allowed", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginTop: "16px" }}>
+            {saving ? "Saving…" : "Complete Section"}
+          </button>
+          {!canComplete && (
+            <p style={{ textAlign: "center", margin: "10px 0 0 0", fontSize: "11px", color: colors.subColor, fontFamily: "'DM Sans', sans-serif" }}>
+              Unlocks once both responses are entered
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourneys, viewingJourney, onContinue, onBeginNew, onViewJourney, onBackFromReview }) {
+  if (viewingJourney) {
+    return (
+      <div style={{ animation: "fadeIn 0.3s ease" }}>
+        <button onClick={onBackFromReview} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px", marginBottom: "14px" }}>
+          ← Progress
+        </button>
+        <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontWeight: "300", fontSize: "26px", color: colors.titleColor }}>
+          Couples Therapy Journey {viewingJourney.journey_number}
+        </h2>
+        <p style={{ margin: "0 0 20px 0", color: colors.subColor, fontSize: "12px", fontFamily: "'DM Sans', sans-serif" }}>
+          {viewingJourney.completed_at ? `Completed ${new Date(viewingJourney.completed_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}` : "In progress"}
+        </p>
+        {COUPLES_THERAPY_SECTIONS.map((section) => {
+          const action = viewingJourney.actions?.[section.number];
+          const isComplete = viewingJourney.completed_sections.includes(section.number);
+          return (
+            <div key={section.number} style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "4px" }}>
+                <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: colors.titleColor }}>{section.number}. {section.name}</span>
+                <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", color: isComplete ? "#b8862a" : colors.subColor }}>{isComplete ? "✓ Complete" : "Not reached"}</span>
+              </div>
+              {action && (
+                <div style={{ marginTop: "8px", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", color: colors.subColor, lineHeight: "1.6" }}>
+                  <div style={{ marginBottom: "4px" }}><strong style={{ color: "#b8862a" }}>Person 1:</strong> {action.person_1_response}</div>
+                  <div><strong style={{ color: "#b8862a" }}>Person 2:</strong> {action.person_2_response}</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  return (
+    <div style={{ animation: "fadeIn 0.4s ease" }}>
+      <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Couples Therapy Progress</h2>
+      <p style={{ margin: "0 0 20px 0", color: colors.subColor, fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>
+        Where you've been, where you are, and how your journey has evolved.
+      </p>
+      {activeJourney && (
+        <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "18px", marginBottom: "20px" }}>
+          <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
+            Current Journey
+          </div>
+          <p style={{ margin: "0 0 2px 0", color: colors.subColor, fontSize: "12px", fontFamily: "'DM Sans', sans-serif" }}>
+            {activeJourney.completed_sections.length} of {COUPLES_THERAPY_SECTION_COUNT} sections complete
+          </p>
+          <h3 style={{ margin: "0 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontWeight: "300", fontSize: "20px", color: colors.titleColor }}>
+            {COUPLES_THERAPY_SECTIONS.find(s => s.number === activeJourney.current_section)?.name || "Complete"}
+          </h3>
+          <div style={{ height: "4px", borderRadius: "4px", background: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.15)", overflow: "hidden", marginBottom: "14px" }}>
+            <div style={{ height: "100%", width: `${(activeJourney.completed_sections.length / COUPLES_THERAPY_SECTION_COUNT) * 100}%`, background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
+          </div>
+          <button onClick={onContinue} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "11px", textTransform: "uppercase" }}>
+            Continue Journey
+          </button>
+        </div>
+      )}
+      {!activeJourney && (
+        <button onClick={onBeginNew} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginBottom: "24px", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
+          {completedJourneys.length > 0 ? "Begin Again" : "Begin Couples Therapy"}
+        </button>
+      )}
+      {completedJourneys.length > 0 && (
+        <>
+          <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
+            Previous Journeys
+          </div>
+          {completedJourneys.map((j) => (
+            <button key={j.id} onClick={() => onViewJourney(j)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "8px", cursor: "pointer" }}>
+              <div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: colors.titleColor }}>Couples Therapy Journey {j.journey_number}</div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", color: colors.subColor, marginTop: "2px" }}>
+                  Completed {j.completed_at ? new Date(j.completed_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : ""}
+                </div>
+              </div>
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", color: "#b8862a" }}>View</span>
+            </button>
+          ))}
+        </>
+      )}
+      {!activeJourney && completedJourneys.length === 0 && (
+        <p style={{ textAlign: "center", padding: "24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "14px" }}>
+          Begin your first Couples Therapy journey to see your progress here.
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [session, setSession] = useState(null);
@@ -3024,6 +3437,17 @@ export default function App() {
   const [surpriseQuestion, setSurpriseQuestion] = useState(null);
   const [gameQuestion, setGameQuestion] = useState(null);
   const [shuffledDateIdea, setShuffledDateIdea] = useState(null);
+  const [ctJourneys, setCtJourneys] = useState([]); // all journeys (active + complete), each with actions attached
+  const [ctDataLoading, setCtDataLoading] = useState(false);
+  const [ctOnboardingSeen, setCtOnboardingSeen] = useState(false);
+  const [ctShowOnboarding, setCtShowOnboarding] = useState(false);
+  const [ctView, setCtView] = useState("overview"); // overview | question | action
+  const [ctQuestionIndex, setCtQuestionIndex] = useState(0);
+  const [ctPerson1Draft, setCtPerson1Draft] = useState("");
+  const [ctPerson2Draft, setCtPerson2Draft] = useState("");
+  const [ctSaving, setCtSaving] = useState(false);
+  const [ctReviewJourney, setCtReviewJourney] = useState(null);
+  const [ctReviewSection, setCtReviewSection] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
     try {
@@ -3125,6 +3549,134 @@ export default function App() {
     );
   }, [session]);
 
+  // Load Couples Therapy journeys + actions from Supabase (completely separate from used_questions)
+  const loadCouplesTherapy = useCallback(() => {
+    if (!session) { setCtJourneys([]); return; }
+    setCtDataLoading(true);
+    Promise.all([
+      supabase.from("couples_therapy_journeys").select("*").eq("user_id", session.user.id).order("journey_number", { ascending: true }),
+      supabase.from("couples_therapy_actions").select("*").eq("user_id", session.user.id)
+    ]).then(([journeysRes, actionsRes]) => {
+      const journeyRows = journeysRes.data || [];
+      const actionRows = actionsRes.data || [];
+      const journeys = journeyRows.map((j) => {
+        const actions = {};
+        actionRows.filter((a) => a.journey_id === j.id).forEach((a) => {
+          actions[a.section_number] = a;
+        });
+        return {
+          id: j.id,
+          journey_number: j.journey_number,
+          status: j.status,
+          started_at: j.started_at,
+          completed_at: j.completed_at,
+          current_section: j.current_section,
+          current_question_index: j.current_question_index,
+          completed_sections: j.completed_sections || [],
+          section_completion_dates: j.section_completion_dates || {},
+          actions
+        };
+      });
+      setCtJourneys(journeys);
+      setCtDataLoading(false);
+    });
+  }, [session]);
+
+  useEffect(() => { loadCouplesTherapy(); }, [loadCouplesTherapy]);
+
+  useEffect(() => {
+    try { if (localStorage.getItem("tc_ct_onboarding_seen") === "true") setCtOnboardingSeen(true); } catch {}
+  }, []);
+
+  const ctActiveJourney = ctJourneys.find((j) => j.status === "active") || null;
+  const ctCompletedJourneys = ctJourneys.filter((j) => j.status === "complete").sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
+
+  const markCtOnboardingSeen = () => {
+    setCtOnboardingSeen(true);
+    try { localStorage.setItem("tc_ct_onboarding_seen", "true"); } catch {}
+  };
+
+  const handleBeginCouplesTherapy = async () => {
+    if (!session) return;
+    markCtOnboardingSeen();
+    setCtShowOnboarding(false);
+    if (ctActiveJourney) { setCtView("overview"); return; }
+    const nextJourneyNumber = ctJourneys.length > 0 ? Math.max(...ctJourneys.map((j) => j.journey_number)) + 1 : 1;
+    const { data, error } = await supabase.from("couples_therapy_journeys").insert({
+      user_id: session.user.id, journey_number: nextJourneyNumber, status: "active",
+      started_at: new Date().toISOString(), current_section: 1, current_question_index: 0,
+      completed_sections: [], section_completion_dates: {}
+    }).select().single();
+    if (!error && data) {
+      setCtJourneys((prev) => [...prev, { ...data, actions: {} }]);
+      setCtView("overview");
+    }
+  };
+
+  const ctSelectSection = (sectionNumber, isComplete) => {
+    if (!ctActiveJourney) return;
+    if (isComplete) {
+      const action = ctActiveJourney.actions[sectionNumber];
+      setCtPerson1Draft(action?.person_1_response || "");
+      setCtPerson2Draft(action?.person_2_response || "");
+      setCtView("action");
+      setCtReviewSection(sectionNumber);
+      return;
+    }
+    setCtReviewSection(null);
+    setCtQuestionIndex(ctActiveJourney.current_question_index || 0);
+    setCtPerson1Draft("");
+    setCtPerson2Draft("");
+    setCtView(ctActiveJourney.current_question_index >= COUPLES_THERAPY_SECTIONS.find(s => s.number === sectionNumber).questions.length ? "action" : "question");
+  };
+
+  const ctPersistProgress = async (journeyId, patch) => {
+    setCtJourneys((prev) => prev.map((j) => (j.id === journeyId ? { ...j, ...patch } : j)));
+    await supabase.from("couples_therapy_journeys").update(patch).eq("id", journeyId);
+  };
+
+  const ctAdvanceQuestion = async () => {
+    if (!ctActiveJourney) return;
+    const section = COUPLES_THERAPY_SECTIONS.find((s) => s.number === ctActiveJourney.current_section);
+    const nextIndex = ctQuestionIndex + 1;
+    if (nextIndex >= section.questions.length) {
+      await ctPersistProgress(ctActiveJourney.id, { current_question_index: nextIndex });
+      setCtView("action");
+    } else {
+      setCtQuestionIndex(nextIndex);
+      await ctPersistProgress(ctActiveJourney.id, { current_question_index: nextIndex });
+    }
+  };
+
+  const ctCompleteSection = async () => {
+    if (!ctActiveJourney) return;
+    setCtSaving(true);
+    const sectionNumber = ctActiveJourney.current_section;
+    const now = new Date().toISOString();
+    const { data: actionRow } = await supabase.from("couples_therapy_actions").upsert({
+      user_id: session.user.id, journey_id: ctActiveJourney.id, section_number: sectionNumber,
+      person_1_response: ctPerson1Draft, person_2_response: ctPerson2Draft, completed_at: now
+    }, { onConflict: "user_id,journey_id,section_number" }).select().single();
+
+    const newCompletedSections = [...ctActiveJourney.completed_sections, sectionNumber];
+    const newCompletionDates = { ...ctActiveJourney.section_completion_dates, [sectionNumber]: now };
+    const isLastSection = sectionNumber >= COUPLES_THERAPY_SECTION_COUNT;
+    const patch = isLastSection
+      ? { status: "complete", completed_at: now, completed_sections: newCompletedSections, section_completion_dates: newCompletionDates }
+      : { current_section: sectionNumber + 1, current_question_index: 0, completed_sections: newCompletedSections, section_completion_dates: newCompletionDates };
+
+    setCtJourneys((prev) => prev.map((j) => (j.id === ctActiveJourney.id
+      ? { ...j, ...patch, actions: { ...j.actions, [sectionNumber]: actionRow || { section_number: sectionNumber, person_1_response: ctPerson1Draft, person_2_response: ctPerson2Draft, completed_at: now } } }
+      : j)));
+    await supabase.from("couples_therapy_journeys").update(patch).eq("id", ctActiveJourney.id);
+
+    setCtSaving(false);
+    setCtQuestionIndex(0);
+    setCtPerson1Draft("");
+    setCtPerson2Draft("");
+    setCtView("overview");
+  };
+
   const handleSignOut = async () => await supabase.auth.signOut();
 
   const totalAvailable = BROWSABLE_CATEGORIES.reduce((sum, cat) => sum + cat.questions.filter((q) => isAvailable(usedMap, cat.id, q)).length, 0);
@@ -3182,10 +3734,18 @@ export default function App() {
               </button>
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px", marginTop: "12px" }}>
-            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Conversation Games", icon: "✦" }].map((t) => (
-              <button key={t.id} onClick={() => { setTab(t.id); setSelectedCategory(null); setActiveGame(null); }}
-                style={{ background: tab === t.id ? colors.tabActiveBg : colors.tabInactiveBg, border: `1px solid ${tab === t.id ? colors.tabActiveBorder : colors.tabInactiveBorder}`, borderRadius: "8px", color: tab === t.id ? colors.tabActiveColor : colors.tabInactiveColor, cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.02em", padding: "9px 6px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "5px", marginTop: "12px" }}>
+            {[{ id: "daily", label: "Daily Questions", icon: "✦" }, { id: "browse", label: "Browse by Category", icon: "⊞" }, { id: "dateIdeas", label: "Date Ideas", icon: "♡" }, { id: "games", label: "Conversation Games", icon: "✦" }, { id: "couplesTherapy", label: "Couples Therapy", icon: "◈" }, { id: "couplesTherapyProgress", label: "CT Progress", icon: "★" }].map((t) => (
+              <button key={t.id} onClick={() => {
+                setTab(t.id); setSelectedCategory(null); setActiveGame(null);
+                if (t.id === "couplesTherapy") {
+                  setCtReviewSection(null);
+                  setCtView("overview");
+                  setCtShowOnboarding(!ctActiveJourney && !ctOnboardingSeen);
+                }
+                if (t.id === "couplesTherapyProgress") { setCtReviewJourney(null); }
+              }}
+                style={{ background: tab === t.id ? colors.tabActiveBg : colors.tabInactiveBg, border: `1px solid ${tab === t.id ? colors.tabActiveBorder : colors.tabInactiveBorder}`, borderRadius: "8px", color: tab === t.id ? colors.tabActiveColor : colors.tabInactiveColor, cursor: "pointer", fontSize: "10.5px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.01em", padding: "9px 4px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
                 {t.icon} {t.label}
               </button>
             ))}
@@ -3404,6 +3964,55 @@ export default function App() {
               <div style={{ textAlign: "center", padding: "48px 24px", color: dm ? "#a4805a" : "#b0906a", fontFamily: "'Lora', serif", fontStyle: "italic" }}>
                 All questions in these categories have been answered. They'll return over the next 180 days.
               </div>
+            )}
+          </div>
+        )}
+
+        {tab === "couplesTherapy" && (
+          <div>
+            {ctDataLoading ? (
+              <div style={{ textAlign: "center", padding: "48px 24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic" }}>Loading…</div>
+            ) : ctShowOnboarding || (!ctActiveJourney && !ctOnboardingSeen) ? (
+              <CouplesTherapyOnboarding dm={dm} colors={colors} onBegin={handleBeginCouplesTherapy} />
+            ) : !ctActiveJourney ? (
+              <div style={{ animation: "fadeIn 0.4s ease" }}>
+                <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Couples Therapy</h2>
+                <p style={{ margin: "0 0 20px 0", color: colors.subColor, fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>
+                  {ctCompletedJourneys.length > 0 ? "You've completed this journey before. Ready to reconnect and see what's changed?" : "A guided journey for the two of you, one section at a time."}
+                </p>
+                <button onClick={() => setCtShowOnboarding(true)} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", padding: "4px", marginBottom: "16px", display: "block" }}>
+                  About Couples Therapy
+                </button>
+                <button onClick={handleBeginCouplesTherapy} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
+                  {ctCompletedJourneys.length > 0 ? "Begin Again" : "Begin Couples Therapy"}
+                </button>
+              </div>
+            ) : ctView === "overview" ? (
+              <CouplesTherapySectionOverview dm={dm} colors={colors} journey={ctActiveJourney} onSelectSection={ctSelectSection} onShowOnboarding={() => setCtShowOnboarding(true)} />
+            ) : ctView === "question" ? (
+              <CouplesTherapyQuestionScreen dm={dm} colors={colors} section={COUPLES_THERAPY_SECTIONS.find(s => s.number === ctActiveJourney.current_section)} questionIndex={ctQuestionIndex} onBack={() => setCtView("overview")} onNext={ctAdvanceQuestion} />
+            ) : (
+              <CouplesTherapyActionScreen dm={dm} colors={colors}
+                section={COUPLES_THERAPY_SECTIONS.find(s => s.number === (ctReviewSection || ctActiveJourney.current_section))}
+                person1Response={ctPerson1Draft} person2Response={ctPerson2Draft}
+                onChangePerson1={setCtPerson1Draft} onChangePerson2={setCtPerson2Draft}
+                onComplete={ctCompleteSection} onBack={() => { setCtView("overview"); setCtReviewSection(null); }}
+                saving={ctSaving} readOnly={!!ctReviewSection} />
+            )}
+          </div>
+        )}
+
+        {tab === "couplesTherapyProgress" && (
+          <div>
+            {ctDataLoading ? (
+              <div style={{ textAlign: "center", padding: "48px 24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic" }}>Loading…</div>
+            ) : (
+              <CouplesTherapyProgressTab dm={dm} colors={colors} activeJourney={ctActiveJourney} completedJourneys={ctCompletedJourneys}
+                viewingJourney={ctReviewJourney}
+                onContinue={() => { setTab("couplesTherapy"); setCtReviewSection(null); setCtView("overview"); }}
+                onBeginNew={handleBeginCouplesTherapy}
+                onViewJourney={(j) => setCtReviewJourney(j)}
+                onBackFromReview={() => setCtReviewJourney(null)} />
             )}
           </div>
         )}
