@@ -1333,7 +1333,6 @@ const ALL_CATEGORIES = [
   {
     id: "nofilter", label: "No Filter, Just Me", color: "#fff5f0", accent: "#a05038",
     questions: [
-      "This is where things get a little more real. Not heavy, just honest. These questions pull out the habits, thoughts, quirks, and truths people don't always say out loud, but will in the right space. It's still light, still fun, but now you're starting to see who people really are beyond the surface.",
       "What's something about you that people wouldn't guess right away?",
       "What's a habit you have that you know is a little weird?",
       "What's something you'll admit, even if it's slightly embarrassing?",
