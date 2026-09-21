@@ -3392,6 +3392,12 @@ function CouplesTherapyActionScreen({ dm, colors, section, person1Response, pers
         {section.actionDescription}
       </p>
       <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "16px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", margin: "0 0 16px 0", color: colors.subColor, fontSize: "12px", lineHeight: "1.6", fontFamily: "'DM Sans', sans-serif" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b8862a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: "3px" }} aria-hidden="true">
+            <rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0" /><line x1="12" y1="18" x2="12" y2="22" />
+          </svg>
+          <span>Tip: tap the microphone on your phone's keyboard to speak your answer instead of typing. Don't see it? Turn on Dictation in your keyboard settings.</span>
+        </div>
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a", marginBottom: "6px" }}>
           Person 1 — {section.person1Label}
         </div>
