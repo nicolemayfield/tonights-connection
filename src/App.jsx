@@ -42,13 +42,13 @@
 // COUPLES THERAPY PART 2 (12-month "Keep Moving Forward" experience, one row per account):
 //    Table "couples_therapy_part2":
 //        id, user_id (text, unique), status ('active' | 'complete'), started_at, completed_at,
-//        reminder_set_at, reminder_day (int), reminder_time (text), current_month (1-12),
+//        current_month (1-12),
 //        completed_months (jsonb), month_completion_dates (jsonb), month_responses (jsonb)
 //    - month_responses shape: { "1": { "person_1": "...", "person_2": "..." }, ... }
 //    - Responses are saved through the submit_part2_response(p_month, p_person, p_text) database function,
 //      which stores each person's response separately and completes the month / unlocks the next one
 //      only when BOTH people have submitted (each person can re-save their own response until then).
-//      The reminder never unlocks a month, and a month's completion date is stamped once and never changed.
+//      A month's completion date is stamped once and never changed.
 //    - Completed months stay editable through edit_part2_month_responses(p_month, p_person_1, p_person_2),
 //      which changes only the saved responses (never completion status or progression).
 //    - Same owner-only RLS as the other Couples Therapy tables (auth.uid()::text = user_id).
@@ -2925,142 +2925,6 @@ const PART2_MONTHS = [
 ];
 const PART2_MONTH_COUNT = PART2_MONTHS.length;
 
-// ─── MONTHLY CALENDAR REMINDER (client-side; the user's calendar owns the recurrence) ──
-const APP_PUBLIC_URL = "https://tonightsconnection.com";
-const REMINDER_TITLE = "Tonight's Connection: Monthly Check-In";
-const REMINDER_NOTE = "Time for your monthly check-in. Open Tonight's Connection to complete this month's check-in and take one intentional step together: " + APP_PUBLIC_URL;
-
-function ordinalDay(n) {
-  const suffixes = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
-}
-
-function pad2(n) { return String(n).padStart(2, "0"); }
-
-// Local wall-clock stamp (no timezone) — calendars read it in the user's own timezone.
-function localStamp(d) {
-  return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
-}
-
-// First occurrence: the chosen day/time this month if it's still comfortably ahead, otherwise next month.
-// Days are limited to 1-28 in the UI so every month has the chosen date.
-function nextReminderStart(dayOfMonth, timeHHMM) {
-  const parts = String(timeHHMM || "19:00").split(":").map((x) => parseInt(x, 10));
-  const hh = Number.isFinite(parts[0]) ? parts[0] : 19;
-  const mm = Number.isFinite(parts[1]) ? parts[1] : 0;
-  const now = new Date();
-  let start = new Date(now.getFullYear(), now.getMonth(), dayOfMonth, hh, mm, 0);
-  if (start.getTime() <= now.getTime() + 60 * 60 * 1000) {
-    start = new Date(now.getFullYear(), now.getMonth() + 1, dayOfMonth, hh, mm, 0);
-  }
-  return start;
-}
-
-function icsEscape(text) {
-  return String(text).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
-}
-
-function icsFold(line) {
-  const out = [];
-  let rest = line;
-  while (rest.length > 73) {
-    out.push(rest.slice(0, 73));
-    rest = " " + rest.slice(73);
-  }
-  out.push(rest);
-  return out.join("\r\n");
-}
-
-function buildMonthlyReminderIcs(dayOfMonth, timeHHMM) {
-  const start = nextReminderStart(dayOfMonth, timeHHMM);
-  const end = new Date(start.getTime() + 30 * 60 * 1000);
-  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-  const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Tonight's Connection//Monthly Check-In//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `UID:tc-monthly-checkin-${localStamp(start)}@tonightsconnection.com`,
-    `DTSTAMP:${stamp}`,
-    `DTSTART:${localStamp(start)}`,
-    `DTEND:${localStamp(end)}`,
-    "RRULE:FREQ=MONTHLY;COUNT=12",
-    `SUMMARY:${icsEscape(REMINDER_TITLE)}`,
-    `DESCRIPTION:${icsEscape(REMINDER_NOTE)}`,
-    `URL:${APP_PUBLIC_URL}`,
-    "BEGIN:VALARM",
-    "ACTION:DISPLAY",
-    `DESCRIPTION:${icsEscape(REMINDER_TITLE)}`,
-    "TRIGGER:PT0S",
-    "END:VALARM",
-    "END:VEVENT",
-    "END:VCALENDAR"
-  ];
-  return lines.map(icsFold).join("\r\n") + "\r\n";
-}
-
-function buildGoogleCalendarUrl(dayOfMonth, timeHHMM) {
-  const start = nextReminderStart(dayOfMonth, timeHHMM);
-  const end = new Date(start.getTime() + 30 * 60 * 1000);
-  let tz = "";
-  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch {}
-  const params = [
-    "action=TEMPLATE",
-    `text=${encodeURIComponent(REMINDER_TITLE)}`,
-    `details=${encodeURIComponent(REMINDER_NOTE)}`,
-    `dates=${localStamp(start)}/${localStamp(end)}`,
-    `recur=${encodeURIComponent("RRULE:FREQ=MONTHLY;COUNT=12")}`
-  ];
-  if (tz) params.push(`ctz=${encodeURIComponent(tz)}`);
-  return "https://calendar.google.com/calendar/render?" + params.join("&");
-}
-
-function isAndroidDevice() {
-  try { return /Android/i.test(navigator.userAgent); } catch { return false; }
-}
-
-function isAppleMobileDevice() {
-  try {
-    const ua = navigator.userAgent || "";
-    return /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  } catch { return false; }
-}
-
-// iPhone / iPad Safari can't open a calendar file that only exists inside the page (blob: links show a blank page),
-// so on Apple mobile devices the file comes from a normal https address (/api/monthly-reminder). Safari opens it
-// with the "Add to Calendar" prompt. The address only contains the chosen start time; nothing is stored.
-function monthlyReminderFileUrl(dayOfMonth, timeHHMM) {
-  const start = localStamp(nextReminderStart(dayOfMonth, timeHHMM));
-  return `${window.location.origin}/api/monthly-reminder?start=${start}`;
-}
-
-function downloadMonthlyReminderIcs(dayOfMonth, timeHHMM) {
-  if (isAppleMobileDevice()) {
-    const url = monthlyReminderFileUrl(dayOfMonth, timeHHMM);
-    const w = window.open(url, "_blank");
-    if (!w) window.location.href = url;
-    return;
-  }
-  const blob = new Blob([buildMonthlyReminderIcs(dayOfMonth, timeHHMM)], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "Tonights-Connection-Monthly-Check-In.ics";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-}
-
-// Android (and Google Calendar users) get a prefilled Google Calendar event; iPhone, iPad and desktop get the calendar file.
-function openMonthlyReminder(dayOfMonth, timeHHMM) {
-  if (isAndroidDevice()) window.open(buildGoogleCalendarUrl(dayOfMonth, timeHHMM), "_blank", "noopener");
-  else downloadMonthlyReminderIcs(dayOfMonth, timeHHMM);
-}
-
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function isAvailable(usedMap, categoryId, questionText) {
   const key = `${categoryId}::${questionText}`;
@@ -3598,30 +3462,9 @@ function CouplesTherapyActionScreen({ dm, colors, section, person1Response, pers
 }
 
 // ─── COUPLES THERAPY PART 2 COMPONENTS ─────────────────────────────────────────
-function CouplesTherapyPart2Transition({ dm, colors, onContinue, saving, userId }) {
-  // iPhone can reload the page while the calendar sheet is open, so the reminder step is remembered on this device.
-  const reminderKey = `tc_part2_reminder_${userId || "user"}`;
-  const rememberedReminder = (() => { try { return JSON.parse(localStorage.getItem(reminderKey) || "null"); } catch { return null; } })();
-  const [day, setDay] = useState(rememberedReminder?.day || Math.min(new Date().getDate(), 28));
-  const [time, setTime] = useState(rememberedReminder?.time || "19:00");
-  const [reminderTapped, setReminderTapped] = useState(!!rememberedReminder);
-  const markReminderTapped = () => {
-    setReminderTapped(true);
-    try { localStorage.setItem(reminderKey, JSON.stringify({ day, time })); } catch {}
-  };
-  const android = isAndroidDevice();
+function CouplesTherapyPart2Transition({ dm, colors, onContinue, saving }) {
   const bodyStyle = { margin: "0 0 14px 0", color: colors.subColor, fontSize: "13px", lineHeight: "1.75", fontFamily: "'DM Sans', sans-serif" };
-  const labelStyle = { display: "block", marginBottom: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase", color: "#b8862a" };
-  const fieldStyle = { width: "100%", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", color: colors.questionText, fontFamily: "'DM Sans', sans-serif", fontSize: "14px", padding: "10px 12px", outline: "none", boxSizing: "border-box", minWidth: 0, maxWidth: "100%", height: "46px", display: "block" };
   const goldButton = { width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" };
-
-  const handleSetReminder = () => { openMonthlyReminder(day, time); markReminderTapped(); };
-  const handleAlternate = () => {
-    if (android) downloadMonthlyReminderIcs(day, time);
-    else window.open(buildGoogleCalendarUrl(day, time), "_blank", "noopener");
-    markReminderTapped();
-  };
-
   return (
     <div style={{ animation: "fadeIn 0.4s ease" }}>
       <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
@@ -3641,37 +3484,14 @@ function CouplesTherapyPart2Transition({ dm, colors, onContinue, saving, userId 
       <p style={bodyStyle}>One person shouldn't have to wait days or weeks for the other to participate. Stay connected, stay in sync, and keep moving forward together.</p>
 
       <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "14px", padding: "20px 18px", margin: "22px 0 18px 0" }}>
-        <h3 style={{ margin: "0 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontWeight: "400", color: colors.titleColor }}>Set Your Monthly Reminder</h3>
-        <p style={bodyStyle}>Before you begin Part 2, set a recurring calendar reminder so you don't forget to come back each month.</p>
-        <p style={bodyStyle}>Choose a day and time that works for both of you. Your reminder will repeat once a month for the next 12 months.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", margin: "0 0 16px 0" }}>
-          <div style={{ minWidth: 0 }}>
-            <label htmlFor="tc-reminder-day" style={labelStyle}>Day of the month</label>
-            <select id="tc-reminder-day" value={day} onChange={(e) => setDay(parseInt(e.target.value, 10))} style={fieldStyle}>
-              {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{ordinalDay(d)}</option>)}
-            </select>
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <label htmlFor="tc-reminder-time" style={labelStyle}>Time</label>
-            <input id="tc-reminder-time" className="tc-time-input" type="time" value={time} onChange={(e) => setTime(e.target.value || "19:00")} style={fieldStyle} />
-          </div>
-        </div>
-        <button onClick={handleSetReminder} style={goldButton}>Set My Monthly Reminder</button>
-        <button onClick={handleAlternate} style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", padding: "4px" }}>
-          {android ? "Download a calendar file instead" : "Add to Google Calendar instead"}
-        </button>
-        {reminderTapped && (
-          <p style={{ ...bodyStyle, margin: "12px 0 0 0", fontSize: "12px", textAlign: "center" }}>
-            Your calendar should now show your monthly reminder. Once it's added, continue to Part 2.
-          </p>
-        )}
+        <h3 style={{ margin: "0 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontWeight: "400", color: colors.titleColor }}>Before You Begin Part 2</h3>
+        <p style={bodyStyle}>Take a moment to close the app and set a recurring calendar reminder on both of your devices for the next 12 months.</p>
+        <p style={{ ...bodyStyle, margin: 0 }}>Choose a day and time that works for both of you. Once you've set your reminders, come back to Tonight's Connection and begin Part 2.</p>
       </div>
 
-      {reminderTapped && (
-        <button onClick={() => onContinue({ day, time })} disabled={saving} style={{ ...goldButton, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}>
-          {saving ? "Starting…" : "Continue to Part 2"}
-        </button>
-      )}
+      <button onClick={onContinue} disabled={saving} style={{ ...goldButton, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}>
+        {saving ? "Starting…" : "Continue to Part 2"}
+      </button>
     </div>
   );
 }
@@ -4193,19 +4013,17 @@ export default function App() {
     try { localStorage.setItem("tc_ct_onboarding_seen", "true"); } catch {}
   };
 
-  const handleBeginPart2 = async ({ day, time }) => {
+  const handleBeginPart2 = async () => {
     if (!session || ctPart2) return;
     setCtPart2Saving(true);
     setCtError("");
     const now = new Date().toISOString();
     const { data, error } = await supabase.from("couples_therapy_part2").insert({
-      user_id: session.user.id, status: "active", started_at: now, reminder_set_at: now,
-      reminder_day: day, reminder_time: time, current_month: 1,
+      user_id: session.user.id, status: "active", started_at: now, current_month: 1,
       completed_months: [], month_completion_dates: {}, month_responses: {}
     }).select().single();
     setCtPart2Saving(false);
     if (!error && data) {
-      try { localStorage.removeItem(`tc_part2_reminder_${session.user.id}`); } catch {}
       setCtPart2(data);
       setCtPart2View("overview");
       setCtPart2Month(null);
@@ -4441,8 +4259,6 @@ export default function App() {
         ::-webkit-scrollbar-thumb { background: rgba(184,134,42,0.3); border-radius: 4px; }
         .tc-response::placeholder { color: #b0a894; opacity: 1; }
         .tc-response-dm::placeholder { color: #7a7060; opacity: 1; }
-        .tc-time-input { -webkit-appearance: none; appearance: none; }
-        .tc-time-input::-webkit-date-and-time-value { text-align: left; }
         html, body { overscroll-behavior: none; overscroll-behavior-x: none; overscroll-behavior-y: none; -webkit-overflow-scrolling: touch; height: 100%; touch-action: pan-y; }
       `}</style>
 
@@ -4721,7 +4537,7 @@ export default function App() {
                 beginLabel={!ctActiveJourney && ctCompletedJourneys.length > 0 ? "Back to Part 2" : "Begin Couples Therapy"} />
             ) : ctShowPart2 ? (
               !ctPart2 ? (
-                <CouplesTherapyPart2Transition dm={dm} colors={colors} onContinue={handleBeginPart2} saving={ctPart2Saving} userId={session?.user?.id} />
+                <CouplesTherapyPart2Transition dm={dm} colors={colors} onContinue={handleBeginPart2} saving={ctPart2Saving} />
               ) : ctPart2View === "overview" || !ctPart2Month ? (
                 <CouplesTherapyPart2Overview dm={dm} colors={colors} part2={ctPart2} onSelectMonth={ctPart2SelectMonth} onShowOnboarding={() => setCtShowOnboarding(true)} />
               ) : (
