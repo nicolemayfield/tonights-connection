@@ -39,6 +39,20 @@
 //    - Apply the same owner-only RLS policy used for used_questions to both new tables:
 //        auth.uid()::text = user_id
 //
+// COUPLES THERAPY PART 2 (12-month "Keep Moving Forward" experience, one row per account):
+//    Table "couples_therapy_part2":
+//        id, user_id (text, unique), status ('active' | 'complete'), started_at, completed_at,
+//        reminder_set_at, reminder_day (int), reminder_time (text), current_month (1-12),
+//        completed_months (jsonb), month_completion_dates (jsonb), month_responses (jsonb)
+//    - month_responses shape: { "1": { "person_1": "...", "person_2": "..." }, ... }
+//    - Responses are saved through the submit_part2_response(p_month, p_person, p_text) database function,
+//      which stores each person's response separately and completes the month / unlocks the next one
+//      only when BOTH people have submitted (each person can re-save their own response until then).
+//      The reminder never unlocks a month, and a month's completion date is stamped once and never changed.
+//    - Completed months stay editable through edit_part2_month_responses(p_month, p_person_1, p_person_2),
+//      which changes only the saved responses (never completion status or progression).
+//    - Same owner-only RLS as the other Couples Therapy tables (auth.uid()::text = user_id).
+//
 // 2. In Vercel, set these Environment Variables (Settings → Environment Variables):
 //    VITE_SUPABASE_URL      = your Supabase project URL
 //    VITE_SUPABASE_ANON_KEY = your Supabase anon key
@@ -2832,6 +2846,214 @@ const COUPLES_THERAPY_SECTIONS = [
 ];
 const COUPLES_THERAPY_SECTION_COUNT = COUPLES_THERAPY_SECTIONS.length;
 
+// ─── COUPLES THERAPY ONBOARDING COPY (Part 1: Reconnect / Part 2: Keep Moving Forward) ──
+const CT_ONBOARDING_SECTION_BLURBS = [
+  "Discover who you are individually, what makes you who you are, and what you value most about yourself.",
+  "Explore the experiences, relationships, environments, and moments that shaped each of you.",
+  "Explore what you may still be carrying from your past and how those experiences may influence the present.",
+  "Understand how your experiences, beliefs, needs, and patterns influence the way you show up in a relationship.",
+  "Explore what happens when two unique people, with two different histories and perspectives, come together.",
+  "Go deeper into understanding the person beside you and discovering things about them you may not have fully seen before.",
+  "Identify the recurring dynamics within your relationship and explore what may be underneath them.",
+  "Discover how each of you experiences love, support, affection, reassurance, connection, and emotional closeness.",
+  "Explore how each of you wants to experience the practical and everyday parts of sharing a life together.",
+  "Define the values, principles, commitments, and qualities you want your relationship to stand on.",
+  "Dream together about the life, relationship, experiences, family, adventures, accomplishments, and future you want to create."
+];
+const CT_ONBOARDING_BLOCKS = [
+  { t: "h", text: "Part 1: Reconnect" },
+  { t: "p", text: "You'll begin by moving through a guided experience designed to help you understand yourselves, each other, and the relationship you're building together." },
+  { t: "p", text: "You'll explore who you are individually, what shaped you, what you carry, how you show up in a relationship, what happens when your two worlds come together, what you need from each other, what you want your relationship to stand on, and what you want to build together." },
+  { t: "p", text: "The goal is to create deeper understanding, meaningful conversations, and intentional action that helps you reconnect with one another." },
+  { t: "h", text: "Part 2: Keep Moving Forward" },
+  { t: "p", text: "Reconnecting is only the beginning." },
+  { t: "p", text: "Part 2 is a simple 12-month experience designed to help you keep nurturing the connection you've created." },
+  { t: "p", text: "Each month, you'll return for a new check-in and an intentional action to help you continue growing closer." },
+  { t: "h", text: "This Is Something You Do Together" },
+  { t: "p", text: "Tonight's Connection is designed for both of you to participate." },
+  { t: "p", text: "You can share the same login and access your experience from separate devices, so you don't have to be sitting in the same place to move through it together." },
+  { t: "p", text: "Each of you will have your own responses to complete. Neither person should have to wait days or weeks for the other person to log in and participate." },
+  { t: "p", text: "Your ability to stay in sync, communicate, participate, and keep moving forward together is part of the experience itself." },
+  { t: "p", text: "One person cannot complete the experience for both of you. When one person stops participating, the process stops moving forward." },
+  { t: "p", text: "That isn't a punishment. It's an opportunity to notice how well you work together as a team, how you communicate with one another, and how intentionally you show up for each other." },
+  { t: "p", text: "You don't have to do everything at the same time. You just have to keep moving together." },
+  { t: "h", text: "This Experience Begins With You" },
+  { t: "p", text: "Before focusing on what you need from each other or what you want to build together, you'll spend time discovering who you are individually, what shaped you, what you carry, and how those things influence the way you show up in a relationship." },
+  { t: "p", text: "Then, you'll turn that same depth of discovery toward each other." },
+  { t: "p", text: "You'll explore what happens when your two worlds come together, recognize your patterns, discover how you each experience love and connection, define the foundation you want your relationship to stand on, and ultimately dream about what you want to build together." },
+  { t: "h", text: "Your Journey" },
+  { t: "p", text: "You'll move through 11 sections, each designed to build on the one before it." },
+  { t: "sections" },
+  { t: "p", text: "The experience moves from discovering yourselves, to understanding each other, to understanding your relationship, to intentionally designing the life you want to build together." },
+  { t: "h", text: "How This Works" },
+  { t: "p", text: "This is a shared experience for two people." },
+  { t: "p", text: "You'll move through the experience together, one section at a time. Each section contains questions designed to take you progressively deeper." },
+  { t: "p", text: "Take your time with every question." },
+  { t: "p", text: "The first answer that comes to mind may not be the deepest answer. Sit with the question. Talk about it. Listen to each other. Give yourselves enough space for something deeper to emerge." },
+  { t: "h", text: "Move Through the Sections in Order" },
+  { t: "p", text: "Every section has been intentionally placed where it is." },
+  { t: "p", text: "The early sections help you understand yourselves and what you're bringing into the relationship. The later sections build on that understanding as you explore your needs, preferences, foundation, and future together." },
+  { t: "p", text: "Complete every question before moving forward." },
+  { t: "p", text: "You won't be able to skip ahead because the experience is designed to build from one section into the next." },
+  { t: "h", text: "The Action Steps Matter" },
+  { t: "p", text: "At the end of every section, you'll receive an action assignment based on what you've just explored together." },
+  { t: "p", text: "This is where the conversation becomes something you can actually experience in your relationship." },
+  { t: "p", text: "The conversation is the bridge." },
+  { t: "p", text: "The action is where you begin to build." },
+  { t: "h", text: "And When You Finish..." },
+  { t: "p", text: "Completing Part 1 isn't the end of the experience." },
+  { t: "p", text: "It's the beginning of the next part." },
+  { t: "p", text: "Once you've completed Part 1: Reconnect, Part 2: Keep Moving Forward will unlock." },
+  { t: "p", text: "You'll receive one intentional check-in each month for the next 12 months, giving you a simple way to keep returning to each other, having meaningful conversations, and strengthening the connection you've built." },
+  { t: "closing", lines: ["Reconnect.", "Keep moving forward."] }
+];
+
+// ─── COUPLES THERAPY PART 2: KEEP MOVING FORWARD (12 monthly check-ins) ────────
+const PART2_MONTHS = [
+  { number: 1, name: "Notice Each Other", checkIn: "What's something about us that feels really good right now?", action: "Do one small thing that reinforces what you appreciate about your relationship." },
+  { number: 2, name: "Make Their Life Easier", checkIn: "What's one thing in your everyday life that has been wearing you down lately?", action: "Find one way to make your partner's day a little easier without being asked." },
+  { number: 3, name: "Surprise Them", checkIn: "What's something small that would genuinely make you smile if I did it for you?", action: "Surprise your partner with something you know they'll appreciate." },
+  { number: 4, name: "Date Your Partner", checkIn: "What would feel fun for us right now?", action: "Plan something together that gets you out of your normal routine." },
+  { number: 5, name: "Speak Life Into One Another", checkIn: "What's something you've noticed about your partner lately that you admire?", action: "Tell them specifically what you admire and why it matters to you." },
+  { number: 6, name: "Put Down the Phones", checkIn: "When do you feel most connected to me?", action: "Create some intentional, distraction-free time together." },
+  { number: 7, name: "Do Something You Love", checkIn: "What's something you love doing that you'd enjoy sharing with me?", action: "Do something you love together." },
+  { number: 8, name: "Give Them a Safe Space to Speak", checkIn: "Is there anything you've been wanting to talk about that we haven't made time for?", action: "Give your partner a safe, uninterrupted space to say what's on their mind, without trying to fix, defend, or solve it." },
+  { number: 9, name: "Bring Back the Fun", checkIn: "What sounds like fun to you right now?", action: "Do something playful, spontaneous, or completely out of the ordinary together." },
+  { number: 10, name: "Remember Why", checkIn: "What's something about our relationship that you're grateful for right now?", action: "Tell your partner one thing you're grateful for about the relationship you've built together." },
+  { number: 11, name: "Choose One Another", checkIn: "What's one way we can intentionally choose each other right now?", action: "Do something that reminds your partner, \"I'm here, I'm with you, and you're important to me.\"" },
+  { number: 12, name: "Look Back, Look Forward", checkIn: "What's one thing we've done recently that made our relationship stronger?", action: "Choose one thing you want to intentionally carry forward into the next three months." }
+];
+const PART2_MONTH_COUNT = PART2_MONTHS.length;
+
+// ─── MONTHLY CALENDAR REMINDER (client-side; the user's calendar owns the recurrence) ──
+const APP_PUBLIC_URL = "https://tonightsconnection.com";
+const REMINDER_TITLE = "Tonight's Connection: Monthly Check-In";
+const REMINDER_NOTE = "Time for your monthly check-in. Open Tonight's Connection to complete this month's check-in and take one intentional step together: " + APP_PUBLIC_URL;
+
+function ordinalDay(n) {
+  const suffixes = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+}
+
+function pad2(n) { return String(n).padStart(2, "0"); }
+
+// Local wall-clock stamp (no timezone) — calendars read it in the user's own timezone.
+function localStamp(d) {
+  return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
+}
+
+// First occurrence: the chosen day/time this month if it's still comfortably ahead, otherwise next month.
+// Days are limited to 1-28 in the UI so every month has the chosen date.
+function nextReminderStart(dayOfMonth, timeHHMM) {
+  const parts = String(timeHHMM || "19:00").split(":").map((x) => parseInt(x, 10));
+  const hh = Number.isFinite(parts[0]) ? parts[0] : 19;
+  const mm = Number.isFinite(parts[1]) ? parts[1] : 0;
+  const now = new Date();
+  let start = new Date(now.getFullYear(), now.getMonth(), dayOfMonth, hh, mm, 0);
+  if (start.getTime() <= now.getTime() + 60 * 60 * 1000) {
+    start = new Date(now.getFullYear(), now.getMonth() + 1, dayOfMonth, hh, mm, 0);
+  }
+  return start;
+}
+
+function icsEscape(text) {
+  return String(text).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+}
+
+function icsFold(line) {
+  const out = [];
+  let rest = line;
+  while (rest.length > 73) {
+    out.push(rest.slice(0, 73));
+    rest = " " + rest.slice(73);
+  }
+  out.push(rest);
+  return out.join("\r\n");
+}
+
+function buildMonthlyReminderIcs(dayOfMonth, timeHHMM) {
+  const start = nextReminderStart(dayOfMonth, timeHHMM);
+  const end = new Date(start.getTime() + 30 * 60 * 1000);
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Tonight's Connection//Monthly Check-In//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:tc-monthly-checkin-${Date.now()}@tonightsconnection.com`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART:${localStamp(start)}`,
+    `DTEND:${localStamp(end)}`,
+    "RRULE:FREQ=MONTHLY;COUNT=12",
+    `SUMMARY:${icsEscape(REMINDER_TITLE)}`,
+    `DESCRIPTION:${icsEscape(REMINDER_NOTE)}`,
+    `URL:${APP_PUBLIC_URL}`,
+    "BEGIN:VALARM",
+    "ACTION:DISPLAY",
+    `DESCRIPTION:${icsEscape(REMINDER_TITLE)}`,
+    "TRIGGER:PT0S",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ];
+  return lines.map(icsFold).join("\r\n") + "\r\n";
+}
+
+function buildGoogleCalendarUrl(dayOfMonth, timeHHMM) {
+  const start = nextReminderStart(dayOfMonth, timeHHMM);
+  const end = new Date(start.getTime() + 30 * 60 * 1000);
+  let tz = "";
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch {}
+  const params = [
+    "action=TEMPLATE",
+    `text=${encodeURIComponent(REMINDER_TITLE)}`,
+    `details=${encodeURIComponent(REMINDER_NOTE)}`,
+    `dates=${localStamp(start)}/${localStamp(end)}`,
+    `recur=${encodeURIComponent("RRULE:FREQ=MONTHLY;COUNT=12")}`
+  ];
+  if (tz) params.push(`ctz=${encodeURIComponent(tz)}`);
+  return "https://calendar.google.com/calendar/render?" + params.join("&");
+}
+
+function isAndroidDevice() {
+  try { return /Android/i.test(navigator.userAgent); } catch { return false; }
+}
+
+function isAppleMobileDevice() {
+  try {
+    const ua = navigator.userAgent || "";
+    return /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  } catch { return false; }
+}
+
+function downloadMonthlyReminderIcs(dayOfMonth, timeHHMM) {
+  const blob = new Blob([buildMonthlyReminderIcs(dayOfMonth, timeHHMM)], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  if (isAppleMobileDevice()) {
+    // iPhone / iPad Safari: opening the calendar file in a new tab offers "Add to Calendar"
+    // and leaves the app open behind it.
+    const w = window.open(url, "_blank");
+    if (!w) window.location.href = url;
+  } else {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Tonights-Connection-Monthly-Check-In.ics";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// Android (and Google Calendar users) get a prefilled Google Calendar event; iPhone, iPad and desktop get the calendar file.
+function openMonthlyReminder(dayOfMonth, timeHHMM) {
+  if (isAndroidDevice()) window.open(buildGoogleCalendarUrl(dayOfMonth, timeHHMM), "_blank", "noopener");
+  else downloadMonthlyReminderIcs(dayOfMonth, timeHHMM);
+}
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function isAvailable(usedMap, categoryId, questionText) {
   const key = `${categoryId}::${questionText}`;
@@ -3184,7 +3406,9 @@ function PasswordSetup({ onComplete }) {
 }
 
 // ─── COUPLES THERAPY COMPONENTS ────────────────────────────────────────────────
-function CouplesTherapyOnboarding({ dm, colors, onBegin }) {
+function CouplesTherapyOnboarding({ dm, colors, onBegin, beginLabel }) {
+  const headingStyle = { margin: "26px 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontWeight: "400", color: colors.titleColor, lineHeight: "1.25" };
+  const bodyStyle = { margin: "0 0 14px 0", color: colors.subColor, fontSize: "13px", lineHeight: "1.75", fontFamily: "'DM Sans', sans-serif" };
   return (
     <div style={{ animation: "fadeIn 0.4s ease" }}>
       <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
@@ -3193,18 +3417,28 @@ function CouplesTherapyOnboarding({ dm, colors, onBegin }) {
       <h2 style={{ margin: "0 0 14px 0", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "28px", fontWeight: "400", color: colors.titleColor, lineHeight: "1.25" }}>
         A Deeper Way to Discover Each Other
       </h2>
-      {[
-        "Welcome to Couples Therapy, a guided experience designed to help two people slow down, go deeper, and discover themselves and each other in a way that strengthens the relationship they're building together.",
-        "This experience begins with you. Before focusing on what you need from each other, you'll spend time discovering who you are individually — what shaped you, what you carry, and how those things influence the way you show up in a relationship. Then you'll turn that same depth of discovery toward each other.",
-        "You'll move through 11 sections, each building on the one before it, in order — from self-discovery through to dreaming about the life you want to build together. Take your time with every question. Sit with it. Talk about it. Listen to each other.",
-        "At the end of every section, you'll receive an action step — an actual activity for the two of you to complete together. Both Person 1 and Person 2 must complete the action and record what they did before the next section unlocks. This isn't a place to skip ahead; the sequence is part of the experience.",
-        "Your progress is tracked separately in the Couples Therapy Progress tab, so you can always see where you are, what you've completed, and how your journey has evolved.",
-        "Once you complete all 11 sections, the full experience becomes available again — whenever you're ready to return, reconnect, and see what new answers emerge. The questions may be the same, but you won't always be the same people answering them."
-      ].map((p, i) => (
-        <p key={i} style={{ margin: "0 0 14px 0", color: colors.subColor, fontSize: "13px", lineHeight: "1.75", fontFamily: "'DM Sans', sans-serif" }}>{p}</p>
-      ))}
+      {CT_ONBOARDING_BLOCKS.map((block, i) => {
+        if (block.t === "h") return <h3 key={i} style={headingStyle}>{block.text}</h3>;
+        if (block.t === "p") return <p key={i} style={bodyStyle}>{block.text}</p>;
+        if (block.t === "sections") return (
+          <div key={i} style={{ margin: "0 0 14px 0" }}>
+            {COUPLES_THERAPY_SECTIONS.map((sec, j) => (
+              <div key={sec.number} style={{ margin: "0 0 12px 0" }}>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: colors.titleColor, marginBottom: "2px" }}>{sec.number}. {sec.name}</div>
+                <div style={{ ...bodyStyle, margin: 0 }}>{CT_ONBOARDING_SECTION_BLURBS[j]}</div>
+              </div>
+            ))}
+          </div>
+        );
+        if (block.t === "closing") return (
+          <div key={i} style={{ margin: "22px 0 8px 0", textAlign: "center", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "22px", color: colors.titleColor, lineHeight: "1.4" }}>
+            {block.lines.map((line) => <div key={line}>{line}</div>)}
+          </div>
+        );
+        return null;
+      })}
       <button onClick={onBegin} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginTop: "8px", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
-        Begin Couples Therapy
+        {beginLabel || "Begin Couples Therapy"}
       </button>
     </div>
   );
@@ -3216,7 +3450,7 @@ function CouplesTherapySectionOverview({ dm, colors, journey, onSelectSection, o
     <div style={{ animation: "fadeIn 0.4s ease" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "6px" }}>
         <h2 style={{ margin: 0, fontFamily: "'Cormorant Garamond', serif", fontSize: "28px", fontWeight: "300", color: colors.titleColor }}>
-          Couples Therapy{journey.journey_number > 1 ? ` · Journey ${journey.journey_number}` : ""}
+          Part 1: Reconnect{journey.journey_number > 1 ? ` · Round ${journey.journey_number}` : ""}
         </h2>
         <button onClick={onShowOnboarding} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", padding: "4px", whiteSpace: "nowrap" }}>
           About
@@ -3304,7 +3538,12 @@ function CouplesTherapyQuestionScreen({ dm, colors, section, questionIndex, isCo
   );
 }
 
-function CouplesTherapyActionScreen({ dm, colors, section, person1Response, person2Response, onChangePerson1, onChangePerson2, onComplete, onBack, saving, readOnly }) {
+function CouplesTherapyActionScreen({ dm, colors, section, person1Response, person2Response, onChangePerson1, onChangePerson2, onComplete, onBack, saving, readOnly, editMode }) {
+  const [justSaved, setJustSaved] = useState(false);
+  const handleSubmit = async () => {
+    const result = await onComplete();
+    if (editMode && result !== false) { setJustSaved(true); setTimeout(() => setJustSaved(false), 2500); }
+  };
   const canComplete = person1Response.trim().length > 0 && person2Response.trim().length > 0;
   const inputStyle = { width: "100%", minHeight: "70px", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", padding: "10px 12px", resize: "none", outline: "none", color: colors.questionText };
   return (
@@ -3325,29 +3564,268 @@ function CouplesTherapyActionScreen({ dm, colors, section, person1Response, pers
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a", marginBottom: "6px" }}>
           Person 1 — {section.person1Label}
         </div>
-        <textarea style={inputStyle} value={person1Response} readOnly={readOnly} placeholder="Type your response…" onChange={(e) => onChangePerson1(e.target.value)} />
+        <textarea className={`tc-response${dm ? " tc-response-dm" : ""}`} style={inputStyle} value={person1Response} readOnly={readOnly} placeholder="Type or Speak" onChange={(e) => { setJustSaved(false); onChangePerson1(e.target.value); }} />
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a", margin: "14px 0 6px" }}>
           Person 2 — {section.person2Label}
         </div>
-        <textarea style={inputStyle} value={person2Response} readOnly={readOnly} placeholder="Type your response…" onChange={(e) => onChangePerson2(e.target.value)} />
+        <textarea className={`tc-response${dm ? " tc-response-dm" : ""}`} style={inputStyle} value={person2Response} readOnly={readOnly} placeholder="Type or Speak" onChange={(e) => { setJustSaved(false); onChangePerson2(e.target.value); }} />
       </div>
       {!readOnly && (
         <>
-          <button onClick={onComplete} disabled={!canComplete || saving} style={{ width: "100%", background: canComplete ? "linear-gradient(135deg, #b8862a, #d4a84e)" : (dm ? "rgba(184,134,42,0.25)" : "rgba(184,134,42,0.3)"), border: "none", borderRadius: "12px", color: canComplete ? "#fff" : (dm ? "rgba(245,230,200,0.4)" : "rgba(255,255,255,0.7)"), cursor: canComplete && !saving ? "pointer" : "not-allowed", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginTop: "16px" }}>
-            {saving ? "Saving…" : "Complete Section"}
+          <button onClick={handleSubmit} disabled={!canComplete || saving} style={{ width: "100%", background: canComplete ? "linear-gradient(135deg, #b8862a, #d4a84e)" : (dm ? "rgba(184,134,42,0.25)" : "rgba(184,134,42,0.3)"), border: "none", borderRadius: "12px", color: canComplete ? "#fff" : (dm ? "rgba(245,230,200,0.4)" : "rgba(255,255,255,0.7)"), cursor: canComplete && !saving ? "pointer" : "not-allowed", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginTop: "16px" }}>
+            {saving ? "Saving…" : editMode ? "Save Changes" : "Complete Section"}
           </button>
-          {!canComplete && (
+          {!canComplete ? (
             <p style={{ textAlign: "center", margin: "10px 0 0 0", fontSize: "11px", color: colors.subColor, fontFamily: "'DM Sans', sans-serif" }}>
-              Unlocks once both responses are entered
+              {editMode ? "Both responses are required" : "Unlocks once both responses are entered"}
             </p>
-          )}
+          ) : editMode ? (
+            <p style={{ textAlign: "center", margin: "10px 0 0 0", fontSize: "11px", color: colors.subColor, fontFamily: "'DM Sans', sans-serif" }}>
+              {justSaved ? "✓ Saved" : "Changes you save here won't change your progress."}
+            </p>
+          ) : null}
         </>
       )}
     </div>
   );
 }
 
-function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourneys, viewingJourney, onContinue, onBeginNew, onViewJourney, onBackFromReview, onSelectSection }) {
+// ─── COUPLES THERAPY PART 2 COMPONENTS ─────────────────────────────────────────
+function CouplesTherapyPart2Transition({ dm, colors, onContinue, saving }) {
+  const [day, setDay] = useState(Math.min(new Date().getDate(), 28));
+  const [time, setTime] = useState("19:00");
+  const [reminderTapped, setReminderTapped] = useState(false);
+  const android = isAndroidDevice();
+  const bodyStyle = { margin: "0 0 14px 0", color: colors.subColor, fontSize: "13px", lineHeight: "1.75", fontFamily: "'DM Sans', sans-serif" };
+  const labelStyle = { display: "block", marginBottom: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase", color: "#b8862a" };
+  const fieldStyle = { width: "100%", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", color: colors.questionText, fontFamily: "'DM Sans', sans-serif", fontSize: "14px", padding: "10px 12px", outline: "none", boxSizing: "border-box" };
+  const goldButton = { width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" };
+
+  const handleSetReminder = () => { openMonthlyReminder(day, time); setReminderTapped(true); };
+  const handleAlternate = () => {
+    if (android) downloadMonthlyReminderIcs(day, time);
+    else window.open(buildGoogleCalendarUrl(day, time), "_blank", "noopener");
+    setReminderTapped(true);
+  };
+
+  return (
+    <div style={{ animation: "fadeIn 0.4s ease" }}>
+      <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
+        Part 1: Reconnect · Complete
+      </div>
+      <h2 style={{ margin: "0 0 14px 0", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", fontSize: "28px", fontWeight: "400", color: colors.titleColor, lineHeight: "1.25" }}>
+        Part 2: Keep Moving Forward
+      </h2>
+      <p style={bodyStyle}>Reconnecting is only the beginning.</p>
+      <p style={bodyStyle}>Part 2 is a simple 12-month experience designed to help you keep nurturing the connection you've created.</p>
+      <p style={bodyStyle}>Each month, you'll return for a new check-in and an intentional action to help you continue growing closer.</p>
+
+      <h3 style={{ margin: "26px 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontWeight: "400", color: colors.titleColor, lineHeight: "1.25" }}>Part 2 Is Something You Do Together</h3>
+      <p style={bodyStyle}>Part 2 continues the same shared experience.</p>
+      <p style={bodyStyle}>Each month, you'll have a check-in to discuss together and an action to complete together. After you've completed the action, both of you will record what you did before the next month can unlock.</p>
+      <p style={bodyStyle}>You can continue using the same login from separate devices, so you don't have to be in the same place to participate.</p>
+      <p style={bodyStyle}>One person shouldn't have to wait days or weeks for the other to participate. Stay connected, stay in sync, and keep moving forward together.</p>
+
+      <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "14px", padding: "20px 18px", margin: "22px 0 18px 0" }}>
+        <h3 style={{ margin: "0 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", fontWeight: "400", color: colors.titleColor }}>Set Your Monthly Reminder</h3>
+        <p style={bodyStyle}>Before you begin Part 2, set a recurring calendar reminder so you don't forget to come back each month.</p>
+        <p style={bodyStyle}>Choose a day and time that works for both of you. Your reminder will repeat once a month for the next 12 months.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", margin: "0 0 16px 0" }}>
+          <div>
+            <label htmlFor="tc-reminder-day" style={labelStyle}>Day of the month</label>
+            <select id="tc-reminder-day" value={day} onChange={(e) => setDay(parseInt(e.target.value, 10))} style={fieldStyle}>
+              {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{ordinalDay(d)}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="tc-reminder-time" style={labelStyle}>Time</label>
+            <input id="tc-reminder-time" type="time" value={time} onChange={(e) => setTime(e.target.value || "19:00")} style={fieldStyle} />
+          </div>
+        </div>
+        <button onClick={handleSetReminder} style={goldButton}>Set My Monthly Reminder</button>
+        <button onClick={handleAlternate} style={{ display: "block", margin: "12px auto 0", background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", padding: "4px" }}>
+          {android ? "Download a calendar file instead" : "Add to Google Calendar instead"}
+        </button>
+        {reminderTapped && (
+          <p style={{ ...bodyStyle, margin: "12px 0 0 0", fontSize: "12px", textAlign: "center" }}>
+            Your calendar should now show your monthly reminder. Once it's added, continue to Part 2.
+          </p>
+        )}
+      </div>
+
+      {reminderTapped && (
+        <button onClick={() => onContinue({ day, time })} disabled={saving} style={{ ...goldButton, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}>
+          {saving ? "Starting…" : "Continue to Part 2"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function CouplesTherapyPart2Overview({ dm, colors, part2, onSelectMonth, onShowOnboarding }) {
+  const completedMonths = part2.completed_months || [];
+  const completedCount = completedMonths.length;
+  return (
+    <div style={{ animation: "fadeIn 0.4s ease" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "6px" }}>
+        <h2 style={{ margin: 0, fontFamily: "'Cormorant Garamond', serif", fontSize: "28px", fontWeight: "300", color: colors.titleColor }}>
+          Part 2: Keep Moving Forward
+        </h2>
+        <button onClick={onShowOnboarding} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", padding: "4px", whiteSpace: "nowrap" }}>
+          About
+        </button>
+      </div>
+      <p style={{ margin: "0 0 8px 0", color: colors.subColor, fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>
+        {completedCount} of {PART2_MONTH_COUNT} months complete
+      </p>
+      <div style={{ height: "4px", borderRadius: "4px", background: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.15)", overflow: "hidden", marginBottom: "20px" }}>
+        <div style={{ height: "100%", width: `${(completedCount / PART2_MONTH_COUNT) * 100}%`, background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
+      </div>
+      {PART2_MONTHS.map((m) => {
+        const isComplete = completedMonths.includes(m.number);
+        const isCurrent = !isComplete && part2.status !== "complete" && m.number === part2.current_month;
+        const isLocked = !isComplete && !isCurrent;
+        const completedDate = part2.month_completion_dates?.[m.number];
+        return (
+          <button key={m.number} onClick={() => { if (!isLocked) onSelectMonth(m.number); }} disabled={isLocked}
+            style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%", textAlign: "left", background: "none", border: "none", borderBottom: `1px solid ${dm ? "rgba(245,230,200,0.08)" : "rgba(139,90,43,0.1)"}`, padding: "13px 4px", cursor: isLocked ? "default" : "pointer" }}>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "20px", color: isLocked ? (dm ? "#4a4438" : "#c4b8a4") : "#b8862a", width: "24px", flexShrink: 0 }}>
+              {m.number}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: isLocked ? (dm ? "#7a7060" : "#b0a894") : colors.titleColor }}>
+                {m.name}
+              </div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", color: colors.subColor, marginTop: "2px" }}>
+                {isComplete ? `Completed ${completedDate ? new Date(completedDate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : ""}` : isCurrent ? "Current" : "Locked"}
+              </div>
+            </div>
+            <div style={{ fontSize: "14px", color: isComplete ? "#b8862a" : (dm ? "#4a4438" : "#c4b8a4"), flexShrink: 0 }}>
+              {isComplete ? "✓" : isLocked ? "🔒" : "●"}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function CouplesTherapyPart2MonthScreen({ dm, colors, month, step, isCompleted, saved, drafts, onChangeDraft, onSubmit, onSaveEdits, onNext, onPrevStep, onBack, onRefresh, saving }) {
+  const [justSaved, setJustSaved] = useState(false);
+  if (!month) return null;
+  const goldButton = { width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" };
+  const linkButton = { display: "block", margin: "12px auto 0", background: "none", border: "none", color: colors.subColor, cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px" };
+  const eyebrow = { color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "8px" };
+  const chip = { display: "inline-flex", alignItems: "center", gap: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "0.04em", textTransform: "uppercase", color: "#b8862a", background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.1)", borderRadius: "6px", padding: "4px 10px" };
+  // A draft is null until the person types; until then the box shows what is already saved.
+  const shown = [0, 1].map((i) => (drafts[i] === null || drafts[i] === undefined ? (saved[i] || "") : drafts[i]));
+  const dirty = [0, 1].map((i) => drafts[i] !== null && drafts[i] !== undefined && drafts[i].trim() !== (saved[i] || "").trim());
+  const savedCount = (saved[0] ? 1 : 0) + (saved[1] ? 1 : 0);
+  const bothFilled = shown[0].trim().length > 0 && shown[1].trim().length > 0;
+  const changeDraft = (n, v) => { setJustSaved(false); onChangeDraft(n, v); };
+  const flashSaved = () => { setJustSaved(true); setTimeout(() => setJustSaved(false), 2500); };
+  const handleSaveEdits = async () => { if (await onSaveEdits()) flashSaved(); };
+  const handleSubmit = async (n) => { if (await onSubmit(n)) flashSaved(); };
+  return (
+    <div style={{ animation: "fadeIn 0.3s ease" }}>
+      <button onClick={onBack} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px", marginBottom: "14px" }}>
+        ← Months
+      </button>
+      <div style={eyebrow}>
+        Month {month.number} · {step === "checkin" ? month.name : "Action Step"}
+      </div>
+      <div style={{ height: "4px", borderRadius: "4px", background: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.15)", overflow: "hidden", marginBottom: "18px" }}>
+        <div style={{ height: "100%", width: step === "checkin" ? "50%" : "100%", background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
+      </div>
+
+      {step === "checkin" ? (
+        <>
+          <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "14px", padding: "28px 22px" }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", color: "#b8862a", marginBottom: "14px" }}>
+              Monthly Check-In
+            </div>
+            <p style={{ margin: 0, fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "17px", lineHeight: "1.7", color: colors.questionText }}>
+              {month.checkIn}
+            </p>
+            {isCompleted ? (
+              <div style={{ ...chip, marginTop: "18px" }}>✓ Completed</div>
+            ) : (
+              <div style={{ display: "inline-block", marginTop: "18px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "600", color: dm ? "#d4a84e" : "#8a6220", background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.1)", borderRadius: "6px", padding: "4px 10px" }}>
+                Discuss this together — no rush
+              </div>
+            )}
+          </div>
+          <button onClick={onNext} style={{ ...goldButton, marginTop: "16px" }}>
+            {isCompleted ? "Next →" : "We've Discussed This — Continue"}
+          </button>
+        </>
+      ) : (
+        <>
+          <h2 style={{ margin: "0 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontWeight: "300", fontSize: "24px", color: colors.titleColor }}>
+            {month.name}
+          </h2>
+          <p style={{ margin: "0 0 16px 0", color: colors.subColor, fontSize: "13px", lineHeight: "1.7", fontFamily: "'DM Sans', sans-serif" }}>
+            {month.action}
+          </p>
+          <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a" }}>What We Did</span>
+              {isCompleted && <span style={chip}>✓ Completed</span>}
+            </div>
+            {[1, 2].map((n) => {
+              const hasSaved = !!saved[n - 1];
+              return (
+                <div key={n} style={{ marginTop: n === 1 ? 0 : "18px" }}>
+                  <label htmlFor={`tc-part2-p${n}`} style={{ display: "block", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a", marginBottom: "6px" }}>
+                    Person {n}
+                  </label>
+                  <textarea id={`tc-part2-p${n}`} className={`tc-response${dm ? " tc-response-dm" : ""}`} value={shown[n - 1]}
+                    placeholder="Type or Speak" onChange={(e) => changeDraft(n, e.target.value)}
+                    style={{ width: "100%", minHeight: "80px", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", padding: "10px 12px", resize: "none", outline: "none", color: colors.questionText, boxSizing: "border-box" }} />
+                  {!isCompleted && hasSaved && <div style={{ ...chip, marginTop: "8px" }}>✓ Submitted</div>}
+                  {!isCompleted && (
+                    <button onClick={() => handleSubmit(n)} disabled={!dirty[n - 1] || !shown[n - 1].trim() || saving}
+                      style={{ ...goldButton, marginTop: "10px", padding: "11px", fontSize: "12px", opacity: !dirty[n - 1] || !shown[n - 1].trim() || saving ? 0.5 : 1, cursor: !dirty[n - 1] || !shown[n - 1].trim() || saving ? "not-allowed" : "pointer" }}>
+                      {saving ? "Saving…" : hasSaved ? `Save Person ${n} Changes` : `Submit Person ${n} Response`}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {isCompleted && (
+            <>
+              <button onClick={handleSaveEdits} disabled={!bothFilled || !(dirty[0] || dirty[1]) || saving}
+                style={{ ...goldButton, marginTop: "16px", opacity: !bothFilled || !(dirty[0] || dirty[1]) || saving ? 0.5 : 1, cursor: !bothFilled || !(dirty[0] || dirty[1]) || saving ? "not-allowed" : "pointer" }}>
+                {saving ? "Saving…" : "Save Changes"}
+              </button>
+              <p style={{ margin: "10px 0 0 0", textAlign: "center", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", lineHeight: "1.6", color: colors.subColor }}>
+                {justSaved ? "✓ Saved" : !bothFilled ? "Both responses are required" : "Changes you save here won't change your progress."}
+              </p>
+            </>
+          )}
+          {!isCompleted && justSaved && (
+            <p style={{ margin: "14px 0 0 0", textAlign: "center", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", color: "#b8862a" }}>✓ Saved</p>
+          )}
+          {!isCompleted && (
+            <p style={{ margin: "14px 0 0 0", textAlign: "center", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", lineHeight: "1.6", color: colors.subColor }}>
+              {savedCount === 1
+                ? `Waiting on Person ${saved[0] ? 2 : 1} to record what they did. The next month unlocks when both of you have submitted.`
+                : "Both of you need to submit a response before the next month unlocks."}
+            </p>
+          )}
+          {!isCompleted && savedCount === 1 && (
+            <button onClick={onRefresh} style={{ ...linkButton, color: "#b8862a", textDecoration: "underline", marginTop: "4px" }}>Check for updates</button>
+          )}
+          <button onClick={onPrevStep} style={linkButton}>← Back to check-in</button>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourneys, viewingJourney, onContinue, onBeginNew, onViewJourney, onBackFromReview, onSelectSection, part2, part1Complete, onOpenPart2, onOpenPart2Month }) {
+  const part2Done = part2 ? (part2.completed_months || []).length : 0;
   if (viewingJourney) {
     return (
       <div style={{ animation: "fadeIn 0.3s ease" }}>
@@ -3355,7 +3833,7 @@ function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourney
           ← Progress
         </button>
         <h2 style={{ margin: "0 0 4px 0", fontFamily: "'Cormorant Garamond', serif", fontWeight: "300", fontSize: "26px", color: colors.titleColor }}>
-          Couples Therapy Journey {viewingJourney.journey_number}
+          Part 1: Reconnect{viewingJourney.journey_number > 1 ? ` · Round ${viewingJourney.journey_number}` : ""}
         </h2>
         <p style={{ margin: "0 0 20px 0", color: colors.subColor, fontSize: "12px", fontFamily: "'DM Sans', sans-serif" }}>
           {viewingJourney.completed_at ? `Completed ${new Date(viewingJourney.completed_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}` : "In progress"}
@@ -3393,7 +3871,7 @@ function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourney
       {activeJourney && (
         <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "18px", marginBottom: "20px" }}>
           <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
-            Current Journey
+            Part 1: Reconnect
           </div>
           <p style={{ margin: "0 0 2px 0", color: colors.subColor, fontSize: "12px", fontFamily: "'DM Sans', sans-serif" }}>
             {activeJourney.completed_sections.length} of {COUPLES_THERAPY_SECTION_COUNT} sections complete
@@ -3405,24 +3883,73 @@ function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourney
             <div style={{ height: "100%", width: `${(activeJourney.completed_sections.length / COUPLES_THERAPY_SECTION_COUNT) * 100}%`, background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
           </div>
           <button onClick={onContinue} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "11px", textTransform: "uppercase" }}>
-            Continue Journey
+            Continue Part 1
           </button>
         </div>
       )}
-      {!activeJourney && (
+      {!activeJourney && completedJourneys.length === 0 && (
         <button onClick={onBeginNew} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", marginBottom: "24px", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
-          {completedJourneys.length > 0 ? "Begin Again" : "Begin Couples Therapy"}
+          Begin Couples Therapy
         </button>
       )}
+      <div style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "18px", marginBottom: "20px" }}>
+        <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
+          Part 2: Keep Moving Forward
+        </div>
+        {part2 ? (
+          <>
+            <p style={{ margin: "0 0 2px 0", color: colors.subColor, fontSize: "12px", fontFamily: "'DM Sans', sans-serif" }}>
+              {part2Done} of {PART2_MONTH_COUNT} months complete
+            </p>
+            <h3 style={{ margin: "0 0 10px 0", fontFamily: "'Cormorant Garamond', serif", fontWeight: "300", fontSize: "20px", color: colors.titleColor }}>
+              {part2.status === "complete" ? "Complete" : `Month ${part2.current_month}: ${PART2_MONTHS.find((m) => m.number === part2.current_month)?.name || ""}`}
+            </h3>
+            <div style={{ height: "4px", borderRadius: "4px", background: dm ? "rgba(184,134,42,0.18)" : "rgba(184,134,42,0.15)", overflow: "hidden", marginBottom: "14px" }}>
+              <div style={{ height: "100%", width: `${(part2Done / PART2_MONTH_COUNT) * 100}%`, background: "linear-gradient(90deg, #b8862a, #d4a84e)" }} />
+            </div>
+            <button onClick={onOpenPart2} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "11px", textTransform: "uppercase" }}>
+              {part2.status === "complete" ? "View Part 2" : "Continue Part 2"}
+            </button>
+            {part2Done > 0 && onOpenPart2Month && (
+              <div style={{ marginTop: "16px" }}>
+                <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "4px" }}>
+                  Completed months
+                </div>
+                {PART2_MONTHS.filter((m) => (part2.completed_months || []).includes(m.number)).map((m) => (
+                  <button key={m.number} onClick={() => onOpenPart2Month(m.number)}
+                    style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", textAlign: "left", background: "none", border: "none", borderTop: `1px solid ${dm ? "rgba(245,230,200,0.08)" : "rgba(139,90,43,0.1)"}`, padding: "11px 2px", cursor: "pointer" }}>
+                    <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "18px", color: "#b8862a", width: "22px", flexShrink: 0 }}>{m.number}</span>
+                    <span style={{ flex: 1, minWidth: 0, fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: colors.titleColor }}>{m.name}</span>
+                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", color: "#b8862a", flexShrink: 0 }}>✓ Complete ›</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        ) : part1Complete ? (
+          <>
+            <p style={{ margin: "0 0 14px 0", color: colors.subColor, fontSize: "12px", fontFamily: "'DM Sans', sans-serif" }}>
+              Part 2 is unlocked.
+            </p>
+            <button onClick={onOpenPart2} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "11px", textTransform: "uppercase" }}>
+              Begin Part 2
+            </button>
+          </>
+        ) : (
+          <p style={{ margin: 0, color: colors.subColor, fontSize: "12px", fontFamily: "'DM Sans', sans-serif" }}>
+            Unlocks when you complete Part 1: Reconnect.
+          </p>
+        )}
+      </div>
       {completedJourneys.length > 0 && (
         <>
           <div style={{ color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "10px" }}>
-            Previous Journeys
+            Completed
           </div>
           {completedJourneys.map((j) => (
             <button key={j.id} onClick={() => onViewJourney(j)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "8px", cursor: "pointer" }}>
               <div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: colors.titleColor }}>Couples Therapy Journey {j.journey_number}</div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: colors.titleColor }}>Part 1: Reconnect{j.journey_number > 1 ? ` · Round ${j.journey_number}` : ""}</div>
                 <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", color: colors.subColor, marginTop: "2px" }}>
                   Completed {j.completed_at ? new Date(j.completed_at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : ""}
                 </div>
@@ -3434,7 +3961,7 @@ function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourney
       )}
       {!activeJourney && completedJourneys.length === 0 && (
         <p style={{ textAlign: "center", padding: "24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic", fontSize: "14px" }}>
-          Begin your first Couples Therapy journey to see your progress here.
+          Begin Part 1: Reconnect to see your progress here.
         </p>
       )}
     </div>
@@ -3469,6 +3996,15 @@ export default function App() {
   const [ctRevisitSection, setCtRevisitSection] = useState(null); // section number being revisited from a completed journey
   const [ctRevisitStep, setCtRevisitStep] = useState("question"); // question | action
   const [ctRevisitQuestionIndex, setCtRevisitQuestionIndex] = useState(0);
+  const [ctPart2, setCtPart2] = useState(null); // the account's Part 2 row (null until Part 2 is begun)
+  const [ctPart2Open, setCtPart2Open] = useState(false); // forces the Part 2 screens (used from the Progress tab)
+  const [ctPart2View, setCtPart2View] = useState("overview"); // overview | checkin | action
+  const [ctPart2Month, setCtPart2Month] = useState(null);
+  const [ctPart2Drafts, setCtPart2Drafts] = useState([null, null]); // unsaved Person 1 / Person 2 action responses
+  const [ctPart2Saving, setCtPart2Saving] = useState(false);
+  const [ctPart2ProgressMonth, setCtPart2ProgressMonth] = useState(null); // completed Part 2 month opened from the Progress tab
+  const [ctPart2ProgressView, setCtPart2ProgressView] = useState("checkin");
+  const [ctRevisitDrafts, setCtRevisitDrafts] = useState(["", ""]); // editable Person 1 / Person 2 responses for a completed Part 1 section opened from Progress
   const [ctError, setCtError] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
@@ -3576,12 +4112,13 @@ export default function App() {
 
   // Load Couples Therapy journeys + actions from Supabase (completely separate from used_questions)
   const loadCouplesTherapy = useCallback(() => {
-    if (!session) { setCtJourneys([]); return; }
+    if (!session) { setCtJourneys([]); setCtPart2(null); return; }
     setCtDataLoading(true);
     Promise.all([
       supabase.from("couples_therapy_journeys").select("*").eq("user_id", session.user.id).order("journey_number", { ascending: true }),
-      supabase.from("couples_therapy_actions").select("*").eq("user_id", session.user.id)
-    ]).then(([journeysRes, actionsRes]) => {
+      supabase.from("couples_therapy_actions").select("*").eq("user_id", session.user.id),
+      supabase.from("couples_therapy_part2").select("*").eq("user_id", session.user.id).maybeSingle()
+    ]).then(([journeysRes, actionsRes, part2Res]) => {
       const journeyRows = journeysRes.data || [];
       const actionRows = actionsRes.data || [];
       const journeys = journeyRows.map((j) => {
@@ -3603,9 +4140,10 @@ export default function App() {
         };
       });
       setCtJourneys(journeys);
-      if (journeysRes.error || actionsRes.error) {
-        console.error("Couples Therapy: failed to load", journeysRes.error, actionsRes.error);
-        setCtError((journeysRes.error || actionsRes.error)?.message || "Couldn't load Couples Therapy. Check that the couples_therapy_journeys and couples_therapy_actions tables exist in Supabase with owner-only RLS enabled.");
+      setCtPart2(part2Res.data || null);
+      if (journeysRes.error || actionsRes.error || part2Res.error) {
+        console.error("Couples Therapy: failed to load", journeysRes.error, actionsRes.error, part2Res.error);
+        setCtError((journeysRes.error || actionsRes.error || part2Res.error)?.message || "Couldn't load Couples Therapy. Check that the couples_therapy_journeys, couples_therapy_actions, and couples_therapy_part2 tables exist in Supabase with owner-only RLS enabled.");
       }
       setCtDataLoading(false);
     });
@@ -3620,9 +4158,108 @@ export default function App() {
   const ctActiveJourney = ctJourneys.find((j) => j.status === "active") || null;
   const ctCompletedJourneys = ctJourneys.filter((j) => j.status === "complete").sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
 
+  // Part 2 unlocks once Part 1 has been completed. It shows whenever there is no active Part 1 journey,
+  // or when explicitly opened from the Progress tab.
+  const ctShowPart2 = ctPart2Open || (!ctActiveJourney && ctCompletedJourneys.length > 0);
+
+  // Re-read the shared Part 2 row so a response the partner submitted from another device shows up.
+  const refreshPart2 = useCallback(async () => {
+    if (!session) return;
+    const { data, error } = await supabase.from("couples_therapy_part2").select("*").eq("user_id", session.user.id).maybeSingle();
+    if (!error && data) setCtPart2(data);
+  }, [session]);
+  const ctPart2Id = ctPart2 ? ctPart2.id : null;
+  useEffect(() => {
+    if (tab === "couplesTherapy" && ctPart2Id && ctShowPart2 && ctPart2View === "overview") refreshPart2();
+  }, [tab, ctShowPart2, ctPart2View, ctPart2Id, refreshPart2]);
+
+
   const markCtOnboardingSeen = () => {
     setCtOnboardingSeen(true);
     try { localStorage.setItem("tc_ct_onboarding_seen", "true"); } catch {}
+  };
+
+  const handleBeginPart2 = async ({ day, time }) => {
+    if (!session || ctPart2) return;
+    setCtPart2Saving(true);
+    setCtError("");
+    const now = new Date().toISOString();
+    const { data, error } = await supabase.from("couples_therapy_part2").insert({
+      user_id: session.user.id, status: "active", started_at: now, reminder_set_at: now,
+      reminder_day: day, reminder_time: time, current_month: 1,
+      completed_months: [], month_completion_dates: {}, month_responses: {}
+    }).select().single();
+    setCtPart2Saving(false);
+    if (!error && data) {
+      setCtPart2(data);
+      setCtPart2View("overview");
+      setCtPart2Month(null);
+    } else {
+      console.error("Couples Therapy: failed to start Part 2", error);
+      setCtError(error?.message || "Couldn't start Part 2. Check that the couples_therapy_part2 table exists in Supabase with owner-only RLS enabled.");
+    }
+  };
+
+  const ctPart2SelectMonth = (monthNumber) => {
+    if (!ctPart2) return;
+    const done = (ctPart2.completed_months || []).includes(monthNumber);
+    if (!done && monthNumber !== ctPart2.current_month) return;
+    setCtPart2Month(monthNumber);
+    setCtPart2Drafts([null, null]);
+    setCtPart2View("checkin");
+  };
+
+  const ctPart2OpenFromProgress = (monthNumber) => {
+    setCtPart2Drafts([null, null]);
+    setCtPart2ProgressView("checkin");
+    setCtPart2ProgressMonth(monthNumber);
+  };
+
+  // Completed months stay editable. Only the saved responses change (done by the edit_part2_month_responses
+  // database function); completion status, dates, and which month is unlocked are untouched.
+  const ctSavePart2Edits = async (monthNumber) => {
+    if (!ctPart2) return false;
+    const saved = ctPart2.month_responses?.[monthNumber] || {};
+    const v1 = ctPart2Drafts[0] ?? saved.person_1 ?? "";
+    const v2 = ctPart2Drafts[1] ?? saved.person_2 ?? "";
+    if (!v1.trim() || !v2.trim()) return false;
+    setCtPart2Saving(true);
+    setCtError("");
+    const { data, error } = await supabase.rpc("edit_part2_month_responses", { p_month: monthNumber, p_person_1: v1, p_person_2: v2 });
+    setCtPart2Saving(false);
+    if (error || !data) {
+      console.error("Couples Therapy: failed to save Part 2 edits", error);
+      setCtError(error?.message || "Couldn't save your changes. Please try again.");
+      refreshPart2();
+      return false;
+    }
+    setCtPart2(data);
+    setCtPart2Drafts([null, null]);
+    return true;
+  };
+
+  // Each person's response is saved separately by the submit_part2_response database function. The month
+  // completes (and the next one unlocks) only when BOTH people have submitted; the function enforces that
+  // on the server, so it works the same from separate devices and can't be bypassed from one device.
+  const ctSubmitPart2Response = async (person) => {
+    if (!ctPart2 || !ctPart2Month) return false;
+    const draft = ctPart2Drafts[person - 1];
+    if (draft === null || draft === undefined || !draft.trim()) return false;
+    const already = ctPart2.month_responses?.[ctPart2Month]?.[`person_${person}`];
+    if (already && draft.trim() === already.trim()) return false;
+    setCtPart2Saving(true);
+    setCtError("");
+    const { data, error } = await supabase.rpc("submit_part2_response", { p_month: ctPart2Month, p_person: person, p_text: draft });
+    setCtPart2Saving(false);
+    if (error || !data) {
+      console.error("Couples Therapy: failed to save Part 2 response", error);
+      setCtError(error?.message || "Couldn't save this response. Please try again.");
+      refreshPart2(); // typed text stays in the box; if the month was completed elsewhere it can be saved as an edit
+      return false;
+    }
+    setCtPart2(data);
+    setCtPart2Drafts((d) => (person === 1 ? [null, d[1]] : [d[0], null]));
+    return true;
   };
 
   const handleBeginCouplesTherapy = async () => {
@@ -3631,6 +4268,8 @@ export default function App() {
     setCtShowOnboarding(false);
     setCtError("");
     if (ctActiveJourney) { setCtView("overview"); return; }
+    // Part 1 already completed: Part 2 replaces starting over, so never create another Part 1 journey here.
+    if (ctCompletedJourneys.length > 0) { setCtView("overview"); return; }
     const nextJourneyNumber = ctJourneys.length > 0 ? Math.max(...ctJourneys.map((j) => j.journey_number)) + 1 : 1;
     const { data, error } = await supabase.from("couples_therapy_journeys").insert({
       user_id: session.user.id, journey_number: nextJourneyNumber, status: "active",
@@ -3696,6 +4335,17 @@ export default function App() {
     if (!ctActiveJourney) return;
     setCtSaving(true);
     const sectionNumber = ctActiveJourney.current_section;
+    // If another device already completed this section, keep its original completion (and timestamp):
+    // don't complete it a second time, just refresh what this device shows.
+    const { data: freshJourney } = await supabase.from("couples_therapy_journeys").select("completed_sections").eq("id", ctActiveJourney.id).maybeSingle();
+    if (freshJourney && (freshJourney.completed_sections || []).includes(sectionNumber)) {
+      setCtSaving(false);
+      setCtPerson1Draft("");
+      setCtPerson2Draft("");
+      setCtView("overview");
+      loadCouplesTherapy();
+      return;
+    }
     const now = new Date().toISOString();
     const { data: actionRow } = await supabase.from("couples_therapy_actions").upsert({
       user_id: session.user.id, journey_id: ctActiveJourney.id, section_number: sectionNumber,
@@ -3719,6 +4369,29 @@ export default function App() {
     setCtPerson1Draft("");
     setCtPerson2Draft("");
     setCtView("overview");
+  };
+
+  // Completed Part 1 sections stay editable. Only the saved responses change; the journey's completed
+  // sections, dates, and progress are untouched.
+  const ctSaveEditedAction = async (journeyId, sectionNumber, response1, response2) => {
+    if (!session || !(response1 || "").trim() || !(response2 || "").trim()) return false;
+    setCtSaving(true);
+    setCtError("");
+    const journey = ctJourneys.find((j) => j.id === journeyId);
+    const existing = journey?.actions?.[sectionNumber];
+    const res = existing?.id
+      ? await supabase.from("couples_therapy_actions").update({ person_1_response: response1, person_2_response: response2 }).eq("id", existing.id).select().single()
+      : await supabase.from("couples_therapy_actions").upsert({ user_id: session.user.id, journey_id: journeyId, section_number: sectionNumber, person_1_response: response1, person_2_response: response2, ...(journey?.section_completion_dates?.[sectionNumber] ? { completed_at: journey.section_completion_dates[sectionNumber] } : {}) }, { onConflict: "user_id,journey_id,section_number" }).select().single();
+    setCtSaving(false);
+    if (res.error) {
+      console.error("Couples Therapy: failed to save edited responses", res.error);
+      setCtError(res.error.message || "Couldn't save your changes. Please try again.");
+      return false;
+    }
+    const row = res.data || { ...(existing || {}), section_number: sectionNumber, person_1_response: response1, person_2_response: response2 };
+    setCtJourneys((prev) => prev.map((j) => (j.id === journeyId ? { ...j, actions: { ...j.actions, [sectionNumber]: row } } : j)));
+    setCtReviewJourney((prev) => (prev && prev.id === journeyId ? { ...prev, actions: { ...prev.actions, [sectionNumber]: row } } : prev));
+    return true;
   };
 
   const handleSignOut = async () => await supabase.auth.signOut();
@@ -3751,6 +4424,8 @@ export default function App() {
         @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(184,134,42,0.3); border-radius: 4px; }
+        .tc-response::placeholder { color: #b0a894; opacity: 1; }
+        .tc-response-dm::placeholder { color: #7a7060; opacity: 1; }
         html, body { overscroll-behavior: none; overscroll-behavior-x: none; overscroll-behavior-y: none; -webkit-overflow-scrolling: touch; height: 100%; touch-action: pan-y; }
       `}</style>
 
@@ -3785,9 +4460,12 @@ export default function App() {
                 if (t.id === "couplesTherapy") {
                   setCtReviewSection(null);
                   setCtView("overview");
-                  setCtShowOnboarding(!ctActiveJourney && !ctOnboardingSeen);
+                  setCtPart2Open(false);
+                  setCtPart2View("overview");
+                  setCtPart2Month(null);
+                  setCtShowOnboarding(!ctActiveJourney && !ctOnboardingSeen && ctCompletedJourneys.length === 0);
                 }
-                if (t.id === "couplesTherapyProgress") { setCtReviewJourney(null); setCtRevisitSection(null); }
+                if (t.id === "couplesTherapyProgress") { setCtReviewJourney(null); setCtRevisitSection(null); setCtPart2ProgressMonth(null); }
               }}
                 style={{ background: tab === t.id ? colors.tabActiveBg : colors.tabInactiveBg, border: `1px solid ${tab === t.id ? colors.tabActiveBorder : colors.tabInactiveBorder}`, borderRadius: "8px", color: tab === t.id ? colors.tabActiveColor : colors.tabInactiveColor, cursor: "pointer", fontSize: "10.5px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.01em", padding: "9px 4px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
                 {t.icon} {t.label}
@@ -3811,7 +4489,7 @@ export default function App() {
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{ marginBottom: "20px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
               <div>
-                <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Tonight's Questions</h2>
+                <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Conversation Questions</h2>
                 <p style={{ margin: 0, color: colors.subColor, fontSize: "14px" }}>One from each category, refreshed daily. Pick one and start connecting.</p>
               </div>
               <button onClick={handleSurpriseMe} style={{ background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: "700", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.04em", padding: "10px 16px", whiteSpace: "nowrap", boxShadow: "0 3px 12px rgba(184,134,42,0.35)" }}>
@@ -4021,19 +4699,37 @@ export default function App() {
             )}
             {ctDataLoading ? (
               <div style={{ textAlign: "center", padding: "48px 24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic" }}>Loading…</div>
-            ) : ctShowOnboarding || (!ctActiveJourney && !ctOnboardingSeen) ? (
-              <CouplesTherapyOnboarding dm={dm} colors={colors} onBegin={handleBeginCouplesTherapy} />
+            ) : ctShowOnboarding || (!ctActiveJourney && !ctOnboardingSeen && ctCompletedJourneys.length === 0) ? (
+              <CouplesTherapyOnboarding dm={dm} colors={colors} onBegin={handleBeginCouplesTherapy}
+                beginLabel={!ctActiveJourney && ctCompletedJourneys.length > 0 ? "Back to Part 2" : "Begin Couples Therapy"} />
+            ) : ctShowPart2 ? (
+              !ctPart2 ? (
+                <CouplesTherapyPart2Transition dm={dm} colors={colors} onContinue={handleBeginPart2} saving={ctPart2Saving} />
+              ) : ctPart2View === "overview" || !ctPart2Month ? (
+                <CouplesTherapyPart2Overview dm={dm} colors={colors} part2={ctPart2} onSelectMonth={ctPart2SelectMonth} onShowOnboarding={() => setCtShowOnboarding(true)} />
+              ) : (
+                <CouplesTherapyPart2MonthScreen dm={dm} colors={colors}
+                  month={PART2_MONTHS.find((m) => m.number === ctPart2Month)} step={ctPart2View}
+                  isCompleted={(ctPart2.completed_months || []).includes(ctPart2Month)}
+                  saved={[ctPart2.month_responses?.[ctPart2Month]?.person_1 || "", ctPart2.month_responses?.[ctPart2Month]?.person_2 || ""]}
+                  drafts={ctPart2Drafts}
+                  onChangeDraft={(n, v) => setCtPart2Drafts((d) => (n === 1 ? [v, d[1]] : [d[0], v]))}
+                  onSubmit={ctSubmitPart2Response} onSaveEdits={() => ctSavePart2Edits(ctPart2Month)}
+                  onNext={() => setCtPart2View("action")} onPrevStep={() => setCtPart2View("checkin")}
+                  onBack={() => { setCtPart2View("overview"); setCtPart2Month(null); }}
+                  onRefresh={refreshPart2} saving={ctPart2Saving} />
+              )
             ) : !ctActiveJourney ? (
               <div style={{ animation: "fadeIn 0.4s ease" }}>
                 <h2 style={{ margin: "0 0 6px 0", fontFamily: "'Cormorant Garamond', serif", fontSize: "30px", fontWeight: "300", color: colors.titleColor }}>Couples Therapy</h2>
                 <p style={{ margin: "0 0 20px 0", color: colors.subColor, fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>
-                  {ctCompletedJourneys.length > 0 ? "You've completed this journey before. Ready to reconnect and see what's changed?" : "A guided journey for the two of you, one section at a time."}
+                  A guided journey for the two of you, one section at a time.
                 </p>
                 <button onClick={() => setCtShowOnboarding(true)} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "11px", fontFamily: "'DM Sans', sans-serif", textDecoration: "underline", padding: "4px", marginBottom: "16px", display: "block" }}>
                   About Couples Therapy
                 </button>
                 <button onClick={handleBeginCouplesTherapy} style={{ width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" }}>
-                  {ctCompletedJourneys.length > 0 ? "Begin Again" : "Begin Couples Therapy"}
+                  Begin Couples Therapy
                 </button>
               </div>
             ) : ctView === "overview" ? (
@@ -4045,8 +4741,9 @@ export default function App() {
                 section={COUPLES_THERAPY_SECTIONS.find(s => s.number === (ctReviewSection || ctActiveJourney.current_section))}
                 person1Response={ctPerson1Draft} person2Response={ctPerson2Draft}
                 onChangePerson1={setCtPerson1Draft} onChangePerson2={setCtPerson2Draft}
-                onComplete={ctCompleteSection} onBack={() => { setCtView("overview"); setCtReviewSection(null); }}
-                saving={ctSaving} readOnly={!!ctReviewSection} />
+                onComplete={ctReviewSection ? () => ctSaveEditedAction(ctActiveJourney.id, ctReviewSection, ctPerson1Draft, ctPerson2Draft) : ctCompleteSection}
+                onBack={() => { setCtView("overview"); setCtReviewSection(null); }}
+                saving={ctSaving} readOnly={false} editMode={!!ctReviewSection} />
             )}
           </div>
         )}
@@ -4055,6 +4752,16 @@ export default function App() {
           <div>
             {ctDataLoading ? (
               <div style={{ textAlign: "center", padding: "48px 24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic" }}>Loading…</div>
+            ) : ctPart2 && ctPart2ProgressMonth ? (
+              <CouplesTherapyPart2MonthScreen dm={dm} colors={colors}
+                month={PART2_MONTHS.find((m) => m.number === ctPart2ProgressMonth)} step={ctPart2ProgressView}
+                isCompleted={(ctPart2.completed_months || []).includes(ctPart2ProgressMonth)}
+                saved={[ctPart2.month_responses?.[ctPart2ProgressMonth]?.person_1 || "", ctPart2.month_responses?.[ctPart2ProgressMonth]?.person_2 || ""]}
+                drafts={ctPart2Drafts}
+                onChangeDraft={(n, v) => setCtPart2Drafts((d) => (n === 1 ? [v, d[1]] : [d[0], v]))}
+                onSubmit={ctSubmitPart2Response} onSaveEdits={() => ctSavePart2Edits(ctPart2ProgressMonth)}
+                onNext={() => setCtPart2ProgressView("action")} onPrevStep={() => setCtPart2ProgressView("checkin")}
+                onBack={() => setCtPart2ProgressMonth(null)} onRefresh={refreshPart2} saving={ctPart2Saving} />
             ) : ctReviewJourney && ctRevisitSection ? (
               ctRevisitStep === "question" ? (
                 <CouplesTherapyQuestionScreen dm={dm} colors={colors}
@@ -4070,19 +4777,22 @@ export default function App() {
               ) : (
                 <CouplesTherapyActionScreen dm={dm} colors={colors}
                   section={COUPLES_THERAPY_SECTIONS.find(s => s.number === ctRevisitSection)}
-                  person1Response={ctReviewJourney.actions?.[ctRevisitSection]?.person_1_response || ""}
-                  person2Response={ctReviewJourney.actions?.[ctRevisitSection]?.person_2_response || ""}
-                  onChangePerson1={() => {}} onChangePerson2={() => {}} onComplete={() => {}}
-                  onBack={() => setCtRevisitSection(null)} saving={false} readOnly />
+                  person1Response={ctRevisitDrafts[0]} person2Response={ctRevisitDrafts[1]}
+                  onChangePerson1={(v) => setCtRevisitDrafts((d) => [v, d[1]])} onChangePerson2={(v) => setCtRevisitDrafts((d) => [d[0], v])}
+                  onComplete={() => ctSaveEditedAction(ctReviewJourney.id, ctRevisitSection, ctRevisitDrafts[0], ctRevisitDrafts[1])}
+                  onBack={() => setCtRevisitSection(null)} saving={ctSaving} readOnly={false} editMode />
               )
             ) : (
               <CouplesTherapyProgressTab dm={dm} colors={colors} activeJourney={ctActiveJourney} completedJourneys={ctCompletedJourneys}
                 viewingJourney={ctReviewJourney}
-                onContinue={() => { setTab("couplesTherapy"); setCtReviewSection(null); setCtView("overview"); }}
+                onContinue={() => { setTab("couplesTherapy"); setCtPart2Open(false); setCtReviewSection(null); setCtView("overview"); }}
+                part2={ctPart2} part1Complete={ctCompletedJourneys.length > 0}
+                onOpenPart2={() => { setCtPart2Open(true); setCtPart2View("overview"); setCtPart2Month(null); setCtShowOnboarding(false); setCtReviewSection(null); setTab("couplesTherapy"); }}
                 onBeginNew={handleBeginCouplesTherapy}
                 onViewJourney={(j) => setCtReviewJourney(j)}
                 onBackFromReview={() => { setCtReviewJourney(null); setCtRevisitSection(null); }}
-                onSelectSection={(n) => { setCtRevisitStep("question"); setCtRevisitQuestionIndex(0); setCtRevisitSection(n); }} />
+                onSelectSection={(n) => { const a = ctReviewJourney?.actions?.[n]; setCtRevisitDrafts([a?.person_1_response || "", a?.person_2_response || ""]); setCtRevisitStep("question"); setCtRevisitQuestionIndex(0); setCtRevisitSection(n); }}
+                onOpenPart2Month={ctPart2OpenFromProgress} />
             )}
           </div>
         )}
