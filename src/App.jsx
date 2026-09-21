@@ -45,10 +45,10 @@
 //        current_month (1-12),
 //        completed_months (jsonb), month_completion_dates (jsonb), month_responses (jsonb)
 //    - month_responses shape: { "1": { "person_1": "...", "person_2": "..." }, ... }
-//    - Responses are saved through the submit_part2_response(p_month, p_person, p_text) database function,
-//      which stores each person's response separately and completes the month / unlocks the next one
-//      only when BOTH people have submitted (each person can re-save their own response until then).
-//      A month's completion date is stamped once and never changed.
+//    - Part 2 flow: each person's box autosaves with save_part2_draft(p_month, p_person, p_text), which never
+//      completes the month and never touches the other person's response. The single Complete Section button
+//      calls complete_part2_month(p_month), which needs both responses, completes the month once for the couple,
+//      stamps its completion date once (never changed afterward), and unlocks the next month.
 //    - Completed months stay editable through edit_part2_month_responses(p_month, p_person_1, p_person_2),
 //      which changes only the saved responses (never completion status or progression).
 //    - Same owner-only RLS as the other Couples Therapy tables (auth.uid()::text = user_id).
@@ -73,7 +73,7 @@
 //    streak are all shared in the cloud.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // ─── SUPABASE CLIENT ──────────────────────────────────────────────────────────
@@ -3051,6 +3051,7 @@ function AuthScreen() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Lora:ital,wght@1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
+        input, textarea, select { font-size: 16px !important; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input::placeholder { color: #b0aa9c; }
         input:focus { border-color: rgba(184,134,42,0.5) !important; }
@@ -3209,6 +3210,7 @@ function PasswordSetup({ onComplete }) {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:wght@300;400&family=Tenor+Sans&family=Playfair+Display:wght@700;900&family=Lora:ital@1&family=DM+Sans:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
+        input, textarea, select { font-size: 16px !important; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         input::placeholder { color: #c0a080; }
         input:focus { border-color: rgba(160,120,48,0.5) !important; }
@@ -3544,22 +3546,22 @@ function CouplesTherapyPart2Overview({ dm, colors, part2, onSelectMonth, onShowO
   );
 }
 
-function CouplesTherapyPart2MonthScreen({ dm, colors, month, step, isCompleted, saved, drafts, onChangeDraft, onSubmit, onSaveEdits, onNext, onPrevStep, onBack, onRefresh, saving }) {
+function CouplesTherapyPart2MonthScreen({ dm, colors, month, step, isCompleted, saved, drafts, onChangeDraft, onComplete, onSaveEdits, onNext, onPrevStep, onBack, saving }) {
   const [justSaved, setJustSaved] = useState(false);
   if (!month) return null;
   const goldButton = { width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" };
   const linkButton = { display: "block", margin: "12px auto 0", background: "none", border: "none", color: colors.subColor, cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px" };
   const eyebrow = { color: "#b8862a", fontSize: "10px", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "'DM Sans', sans-serif", marginBottom: "8px" };
   const chip = { display: "inline-flex", alignItems: "center", gap: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "0.04em", textTransform: "uppercase", color: "#b8862a", background: dm ? "rgba(184,134,42,0.16)" : "rgba(184,134,42,0.1)", borderRadius: "6px", padding: "4px 10px" };
+  const hint = { textAlign: "center", margin: "10px 0 0 0", fontSize: "11px", color: colors.subColor, fontFamily: "'DM Sans', sans-serif" };
   // A draft is null until the person types; until then the box shows what is already saved.
   const shown = [0, 1].map((i) => (drafts[i] === null || drafts[i] === undefined ? (saved[i] || "") : drafts[i]));
   const dirty = [0, 1].map((i) => drafts[i] !== null && drafts[i] !== undefined && drafts[i].trim() !== (saved[i] || "").trim());
-  const savedCount = (saved[0] ? 1 : 0) + (saved[1] ? 1 : 0);
   const bothFilled = shown[0].trim().length > 0 && shown[1].trim().length > 0;
   const changeDraft = (n, v) => { setJustSaved(false); onChangeDraft(n, v); };
-  const flashSaved = () => { setJustSaved(true); setTimeout(() => setJustSaved(false), 2500); };
-  const handleSaveEdits = async () => { if (await onSaveEdits()) flashSaved(); };
-  const handleSubmit = async (n) => { if (await onSubmit(n)) flashSaved(); };
+  const handleSaveEdits = async () => {
+    if (await onSaveEdits()) { setJustSaved(true); setTimeout(() => setJustSaved(false), 2500); }
+  };
   return (
     <div style={{ animation: "fadeIn 0.3s ease" }}>
       <button onClick={onBack} style={{ background: "none", border: "none", color: "#b8862a", cursor: "pointer", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", padding: "4px", marginBottom: "14px" }}>
@@ -3606,50 +3608,35 @@ function CouplesTherapyPart2MonthScreen({ dm, colors, month, step, isCompleted, 
               <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a" }}>What We Did</span>
               {isCompleted && <span style={chip}>✓ Completed</span>}
             </div>
-            {[1, 2].map((n) => {
-              const hasSaved = !!saved[n - 1];
-              return (
-                <div key={n} style={{ marginTop: n === 1 ? 0 : "18px" }}>
-                  <label htmlFor={`tc-part2-p${n}`} style={{ display: "block", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a", marginBottom: "6px" }}>
-                    Person {n}
-                  </label>
-                  <textarea id={`tc-part2-p${n}`} className={`tc-response${dm ? " tc-response-dm" : ""}`} value={shown[n - 1]}
-                    placeholder="Type or Speak" onChange={(e) => changeDraft(n, e.target.value)}
-                    style={{ width: "100%", minHeight: "80px", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", padding: "10px 12px", resize: "none", outline: "none", color: colors.questionText, boxSizing: "border-box" }} />
-                  {!isCompleted && hasSaved && <div style={{ ...chip, marginTop: "8px" }}>✓ Submitted</div>}
-                  {!isCompleted && (
-                    <button onClick={() => handleSubmit(n)} disabled={!dirty[n - 1] || !shown[n - 1].trim() || saving}
-                      style={{ ...goldButton, marginTop: "10px", padding: "11px", fontSize: "12px", opacity: !dirty[n - 1] || !shown[n - 1].trim() || saving ? 0.5 : 1, cursor: !dirty[n - 1] || !shown[n - 1].trim() || saving ? "not-allowed" : "pointer" }}>
-                      {saving ? "Saving…" : hasSaved ? `Save Person ${n} Changes` : `Submit Person ${n} Response`}
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+            {[1, 2].map((n) => (
+              <div key={n} style={{ marginTop: n === 1 ? 0 : "18px" }}>
+                <label htmlFor={`tc-part2-p${n}`} style={{ display: "block", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", fontWeight: "700", letterSpacing: "0.05em", textTransform: "uppercase", color: "#b8862a", marginBottom: "6px" }}>
+                  Person {n}
+                </label>
+                <textarea id={`tc-part2-p${n}`} className={`tc-response${dm ? " tc-response-dm" : ""}`} value={shown[n - 1]}
+                  placeholder="Type or Speak" onChange={(e) => changeDraft(n, e.target.value)}
+                  style={{ width: "100%", minHeight: "80px", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", fontFamily: "'DM Sans', sans-serif", fontSize: "13px", padding: "10px 12px", resize: "none", outline: "none", color: colors.questionText, boxSizing: "border-box" }} />
+              </div>
+            ))}
           </div>
-          {isCompleted && (
+          {isCompleted ? (
             <>
               <button onClick={handleSaveEdits} disabled={!bothFilled || !(dirty[0] || dirty[1]) || saving}
                 style={{ ...goldButton, marginTop: "16px", opacity: !bothFilled || !(dirty[0] || dirty[1]) || saving ? 0.5 : 1, cursor: !bothFilled || !(dirty[0] || dirty[1]) || saving ? "not-allowed" : "pointer" }}>
                 {saving ? "Saving…" : "Save Changes"}
               </button>
-              <p style={{ margin: "10px 0 0 0", textAlign: "center", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", lineHeight: "1.6", color: colors.subColor }}>
+              <p style={hint}>
                 {justSaved ? "✓ Saved" : !bothFilled ? "Both responses are required" : "Changes you save here won't change your progress."}
               </p>
             </>
-          )}
-          {!isCompleted && justSaved && (
-            <p style={{ margin: "14px 0 0 0", textAlign: "center", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", color: "#b8862a" }}>✓ Saved</p>
-          )}
-          {!isCompleted && (
-            <p style={{ margin: "14px 0 0 0", textAlign: "center", fontFamily: "'DM Sans', sans-serif", fontSize: "11px", lineHeight: "1.6", color: colors.subColor }}>
-              {savedCount === 1
-                ? `Waiting on Person ${saved[0] ? 2 : 1} to record what they did. The next month unlocks when both of you have submitted.`
-                : "Both of you need to submit a response before the next month unlocks."}
-            </p>
-          )}
-          {!isCompleted && savedCount === 1 && (
-            <button onClick={onRefresh} style={{ ...linkButton, color: "#b8862a", textDecoration: "underline", marginTop: "4px" }}>Check for updates</button>
+          ) : (
+            <>
+              <button onClick={onComplete} disabled={!bothFilled || saving}
+                style={{ ...goldButton, marginTop: "16px", opacity: !bothFilled || saving ? 0.5 : 1, cursor: !bothFilled || saving ? "not-allowed" : "pointer" }}>
+                {saving ? "Saving…" : "Complete Section"}
+              </button>
+              {!bothFilled && <p style={hint}>Unlocks once both responses are entered</p>}
+            </>
           )}
           <button onClick={onPrevStep} style={linkButton}>← Back to check-in</button>
         </>
@@ -4007,6 +3994,15 @@ export default function App() {
     if (tab === "couplesTherapy" && ctPart2Id && ctShowPart2 && ctPart2View === "overview") refreshPart2();
   }, [tab, ctShowPart2, ctPart2View, ctPart2Id, refreshPart2]);
 
+  // While the open month is on screen, pick up the partner's responses (or their completing the month) on its own.
+  const ctOpenMonthOnScreen = tab === "couplesTherapy" && ctShowPart2 && !!ctPart2 && !!ctPart2Month && ctPart2View !== "overview"
+    && ctPart2.status !== "complete" && !(ctPart2.completed_months || []).includes(ctPart2Month);
+  useEffect(() => {
+    if (!ctOpenMonthOnScreen) return;
+    const id = setInterval(() => refreshPart2(), 5000);
+    return () => clearInterval(id);
+  }, [ctOpenMonthOnScreen, refreshPart2]);
+
 
   const markCtOnboardingSeen = () => {
     setCtOnboardingSeen(true);
@@ -4033,17 +4029,73 @@ export default function App() {
     }
   };
 
+  // Drafts live in a ref as well as state so the autosave timer always sees the latest text.
+  const ctPart2DraftsRef = useRef([null, null]);
+  const ctPart2Ref = useRef(null);
+  const ctPart2Timers = useRef([null, null]);
+  ctPart2Ref.current = ctPart2;
+  ctPart2DraftsRef.current = ctPart2Drafts;
+  const setPart2Draft = (person, value) => {
+    const cur = ctPart2DraftsRef.current;
+    const next = person === 1 ? [value, cur[1]] : [cur[0], value];
+    ctPart2DraftsRef.current = next;
+    setCtPart2Drafts(next);
+  };
+  const resetPart2Drafts = () => {
+    ctPart2Timers.current.forEach((t) => clearTimeout(t));
+    ctPart2DraftsRef.current = [null, null];
+    setCtPart2Drafts([null, null]);
+  };
+
+  // Each person's box saves on its own shortly after they stop typing (save_part2_draft). Saving one box never
+  // touches the other, never completes the month, and never locks anything, so both people can type at the same
+  // time, even from separate devices. Only the single Complete Section button completes the month.
+  const flushPart2Draft = async (person, month) => {
+    clearTimeout(ctPart2Timers.current[person - 1]);
+    const text = ctPart2DraftsRef.current[person - 1];
+    if (text === null || text === undefined) return true;
+    const row = ctPart2Ref.current;
+    if (!row || row.status === "complete" || month !== row.current_month) return true; // only the open month autosaves
+    const savedText = row.month_responses?.[month]?.[`person_${person}`] || "";
+    if (text.trim() === savedText.trim()) { setPart2Draft(person, null); return true; }
+    const { data, error } = await supabase.rpc("save_part2_draft", { p_month: month, p_person: person, p_text: text });
+    if (error || !data) {
+      console.error("Couples Therapy: failed to save Part 2 response", error);
+      setCtError(error?.message || "Couldn't save your response. Please try again.");
+      return false;
+    }
+    ctPart2Ref.current = data;
+    setCtPart2(data);
+    if ((ctPart2DraftsRef.current[person - 1] ?? "").trim() === text.trim()) setPart2Draft(person, null);
+    return true;
+  };
+  const changePart2Draft = (person, value, monthIsOpen) => {
+    setPart2Draft(person, value);
+    if (!monthIsOpen) return;
+    const month = ctPart2Month;
+    clearTimeout(ctPart2Timers.current[person - 1]);
+    ctPart2Timers.current[person - 1] = setTimeout(() => flushPart2Draft(person, month), 700);
+  };
+
   const ctPart2SelectMonth = (monthNumber) => {
     if (!ctPart2) return;
     const done = (ctPart2.completed_months || []).includes(monthNumber);
     if (!done && monthNumber !== ctPart2.current_month) return;
     setCtPart2Month(monthNumber);
-    setCtPart2Drafts([null, null]);
+    resetPart2Drafts();
     setCtPart2View("checkin");
   };
 
+  // Leaving the open month: save whatever was typed.
+  const ctLeavePart2Month = () => {
+    const month = ctPart2Month;
+    if (month) { flushPart2Draft(1, month); flushPart2Draft(2, month); }
+    setCtPart2View("overview");
+    setCtPart2Month(null);
+  };
+
   const ctPart2OpenFromProgress = (monthNumber) => {
-    setCtPart2Drafts([null, null]);
+    resetPart2Drafts();
     setCtPart2ProgressView("checkin");
     setCtPart2ProgressMonth(monthNumber);
   };
@@ -4067,32 +4119,33 @@ export default function App() {
       return false;
     }
     setCtPart2(data);
-    setCtPart2Drafts([null, null]);
+    resetPart2Drafts();
     return true;
   };
 
-  // Each person's response is saved separately by the submit_part2_response database function. The month
-  // completes (and the next one unlocks) only when BOTH people have submitted; the function enforces that
-  // on the server, so it works the same from separate devices and can't be bypassed from one device.
-  const ctSubmitPart2Response = async (person) => {
-    if (!ctPart2 || !ctPart2Month) return false;
-    const draft = ctPart2Drafts[person - 1];
-    if (draft === null || draft === undefined || !draft.trim()) return false;
-    const already = ctPart2.month_responses?.[ctPart2Month]?.[`person_${person}`];
-    if (already && draft.trim() === already.trim()) return false;
+  // The single Complete Section button: saves both boxes, then completes the month ONCE for the couple.
+  // The database checks that both responses exist, stamps the completion date one time, and unlocks the next month.
+  const ctCompletePart2Month = async () => {
+    if (!ctPart2 || !ctPart2Month) return;
+    const month = ctPart2Month;
     setCtPart2Saving(true);
     setCtError("");
-    const { data, error } = await supabase.rpc("submit_part2_response", { p_month: ctPart2Month, p_person: person, p_text: draft });
+    const savedFirst = await flushPart2Draft(1, month);
+    const savedSecond = savedFirst ? await flushPart2Draft(2, month) : false;
+    if (!savedFirst || !savedSecond) { setCtPart2Saving(false); return; }
+    const { data, error } = await supabase.rpc("complete_part2_month", { p_month: month });
     setCtPart2Saving(false);
     if (error || !data) {
-      console.error("Couples Therapy: failed to save Part 2 response", error);
-      setCtError(error?.message || "Couldn't save this response. Please try again.");
-      refreshPart2(); // typed text stays in the box; if the month was completed elsewhere it can be saved as an edit
-      return false;
+      console.error("Couples Therapy: failed to complete Part 2 month", error);
+      setCtError(error?.message || "Couldn't complete this section. Please try again.");
+      refreshPart2();
+      return;
     }
+    ctPart2Ref.current = data;
     setCtPart2(data);
-    setCtPart2Drafts((d) => (person === 1 ? [null, d[1]] : [d[0], null]));
-    return true;
+    resetPart2Drafts();
+    setCtPart2View("overview");
+    setCtPart2Month(null);
   };
 
   const handleBeginCouplesTherapy = async () => {
@@ -4250,10 +4303,11 @@ export default function App() {
   if (!session) return <AuthScreen />;
 
   return (
-    <div style={{ minHeight: "100vh", background: colors.bg, fontFamily: "'DM Sans', sans-serif", color: colors.titleColor, overscrollBehavior: "none", transition: "background 0.3s ease" }}>
+    <div style={{ minHeight: "100vh", background: colors.bg, fontFamily: "'DM Sans', sans-serif", color: colors.titleColor, overscrollBehavior: "none", transition: "background 0.3s ease", overflowWrap: "anywhere" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Monoton&family=Cormorant+Garamond:wght@300;400&family=Tenor+Sans&family=Playfair+Display:wght@400;700;900&family=Lora:ital,wght@0,400;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
+        input, textarea, select { font-size: 16px !important; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(184,134,42,0.3); border-radius: 4px; }
@@ -4546,11 +4600,10 @@ export default function App() {
                   isCompleted={(ctPart2.completed_months || []).includes(ctPart2Month)}
                   saved={[ctPart2.month_responses?.[ctPart2Month]?.person_1 || "", ctPart2.month_responses?.[ctPart2Month]?.person_2 || ""]}
                   drafts={ctPart2Drafts}
-                  onChangeDraft={(n, v) => setCtPart2Drafts((d) => (n === 1 ? [v, d[1]] : [d[0], v]))}
-                  onSubmit={ctSubmitPart2Response} onSaveEdits={() => ctSavePart2Edits(ctPart2Month)}
+                  onChangeDraft={(n, v) => changePart2Draft(n, v, !(ctPart2.completed_months || []).includes(ctPart2Month))}
+                  onComplete={ctCompletePart2Month} onSaveEdits={() => ctSavePart2Edits(ctPart2Month)}
                   onNext={() => setCtPart2View("action")} onPrevStep={() => setCtPart2View("checkin")}
-                  onBack={() => { setCtPart2View("overview"); setCtPart2Month(null); }}
-                  onRefresh={refreshPart2} saving={ctPart2Saving} />
+                  onBack={ctLeavePart2Month} saving={ctPart2Saving} />
               )
             ) : !ctActiveJourney ? (
               <div style={{ animation: "fadeIn 0.4s ease" }}>
@@ -4591,10 +4644,10 @@ export default function App() {
                 isCompleted={(ctPart2.completed_months || []).includes(ctPart2ProgressMonth)}
                 saved={[ctPart2.month_responses?.[ctPart2ProgressMonth]?.person_1 || "", ctPart2.month_responses?.[ctPart2ProgressMonth]?.person_2 || ""]}
                 drafts={ctPart2Drafts}
-                onChangeDraft={(n, v) => setCtPart2Drafts((d) => (n === 1 ? [v, d[1]] : [d[0], v]))}
-                onSubmit={ctSubmitPart2Response} onSaveEdits={() => ctSavePart2Edits(ctPart2ProgressMonth)}
+                onChangeDraft={(n, v) => changePart2Draft(n, v, false)}
+                onComplete={() => {}} onSaveEdits={() => ctSavePart2Edits(ctPart2ProgressMonth)}
                 onNext={() => setCtPart2ProgressView("action")} onPrevStep={() => setCtPart2ProgressView("checkin")}
-                onBack={() => setCtPart2ProgressMonth(null)} onRefresh={refreshPart2} saving={ctPart2Saving} />
+                onBack={() => setCtPart2ProgressMonth(null)} saving={ctPart2Saving} />
             ) : ctReviewJourney && ctRevisitSection ? (
               ctRevisitStep === "question" ? (
                 <CouplesTherapyQuestionScreen dm={dm} colors={colors}
