@@ -1333,7 +1333,6 @@ const ALL_CATEGORIES = [
   {
     id: "nofilter", label: "No Filter, Just Me", color: "#fff5f0", accent: "#a05038",
     questions: [
-      "This is where things get a little more real. Not heavy, just honest. These questions pull out the habits, thoughts, quirks, and truths people don't always say out loud, but will in the right space. It's still light, still fun, but now you're starting to see who people really are beyond the surface.",
       "What's something about you that people wouldn't guess right away?",
       "What's a habit you have that you know is a little weird?",
       "What's something you'll admit, even if it's slightly embarrassing?",
@@ -3348,7 +3347,7 @@ function CouplesTherapyActionScreen({ dm, colors, section, person1Response, pers
   );
 }
 
-function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourneys, viewingJourney, onContinue, onBeginNew, onViewJourney, onBackFromReview }) {
+function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourneys, viewingJourney, onContinue, onBeginNew, onViewJourney, onBackFromReview, onSelectSection }) {
   if (viewingJourney) {
     return (
       <div style={{ animation: "fadeIn 0.3s ease" }}>
@@ -3364,11 +3363,14 @@ function CouplesTherapyProgressTab({ dm, colors, activeJourney, completedJourney
         {COUPLES_THERAPY_SECTIONS.map((section) => {
           const action = viewingJourney.actions?.[section.number];
           const isComplete = viewingJourney.completed_sections.includes(section.number);
+          const clickable = isComplete && !!onSelectSection;
           return (
-            <div key={section.number} style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "10px" }}>
+            <div key={section.number}
+              {...(clickable ? { role: "button", tabIndex: 0, onClick: () => onSelectSection(section.number), onKeyDown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelectSection(section.number); } } } : {})}
+              style={{ background: colors.cardBg, border: `1px solid ${colors.cardBorder}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "10px", cursor: clickable ? "pointer" : "default" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "4px" }}>
                 <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "13px", fontWeight: "600", color: colors.titleColor }}>{section.number}. {section.name}</span>
-                <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", color: isComplete ? "#b8862a" : colors.subColor }}>{isComplete ? "✓ Complete" : "Not reached"}</span>
+                <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "10px", color: isComplete ? "#b8862a" : colors.subColor }}>{isComplete ? (clickable ? "✓ Complete ›" : "✓ Complete") : "Not reached"}</span>
               </div>
               {action && (
                 <div style={{ marginTop: "8px", fontSize: "12px", fontFamily: "'DM Sans', sans-serif", color: colors.subColor, lineHeight: "1.6" }}>
@@ -3464,6 +3466,9 @@ export default function App() {
   const [ctSaving, setCtSaving] = useState(false);
   const [ctReviewJourney, setCtReviewJourney] = useState(null);
   const [ctReviewSection, setCtReviewSection] = useState(null);
+  const [ctRevisitSection, setCtRevisitSection] = useState(null); // section number being revisited from a completed journey
+  const [ctRevisitStep, setCtRevisitStep] = useState("question"); // question | action
+  const [ctRevisitQuestionIndex, setCtRevisitQuestionIndex] = useState(0);
   const [ctError, setCtError] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   useEffect(() => {
@@ -3782,7 +3787,7 @@ export default function App() {
                   setCtView("overview");
                   setCtShowOnboarding(!ctActiveJourney && !ctOnboardingSeen);
                 }
-                if (t.id === "couplesTherapyProgress") { setCtReviewJourney(null); }
+                if (t.id === "couplesTherapyProgress") { setCtReviewJourney(null); setCtRevisitSection(null); }
               }}
                 style={{ background: tab === t.id ? colors.tabActiveBg : colors.tabInactiveBg, border: `1px solid ${tab === t.id ? colors.tabActiveBorder : colors.tabInactiveBorder}`, borderRadius: "8px", color: tab === t.id ? colors.tabActiveColor : colors.tabInactiveColor, cursor: "pointer", fontSize: "10.5px", fontFamily: "'DM Sans', sans-serif", fontWeight: "600", letterSpacing: "0.01em", padding: "9px 4px", transition: "all 0.2s ease", lineHeight: "1.3" }}>
                 {t.icon} {t.label}
@@ -4050,13 +4055,34 @@ export default function App() {
           <div>
             {ctDataLoading ? (
               <div style={{ textAlign: "center", padding: "48px 24px", color: colors.subColor, fontFamily: "'Lora', serif", fontStyle: "italic" }}>Loading…</div>
+            ) : ctReviewJourney && ctRevisitSection ? (
+              ctRevisitStep === "question" ? (
+                <CouplesTherapyQuestionScreen dm={dm} colors={colors}
+                  section={COUPLES_THERAPY_SECTIONS.find(s => s.number === ctRevisitSection)}
+                  questionIndex={ctRevisitQuestionIndex} isCompleted={true}
+                  onBack={() => setCtRevisitSection(null)}
+                  onNext={() => {
+                    const sec = COUPLES_THERAPY_SECTIONS.find(s => s.number === ctRevisitSection);
+                    if (ctRevisitQuestionIndex + 1 >= sec.questions.length) setCtRevisitStep("action");
+                    else setCtRevisitQuestionIndex(ctRevisitQuestionIndex + 1);
+                  }}
+                  onPrevQuestion={() => setCtRevisitQuestionIndex((i) => Math.max(0, i - 1))} />
+              ) : (
+                <CouplesTherapyActionScreen dm={dm} colors={colors}
+                  section={COUPLES_THERAPY_SECTIONS.find(s => s.number === ctRevisitSection)}
+                  person1Response={ctReviewJourney.actions?.[ctRevisitSection]?.person_1_response || ""}
+                  person2Response={ctReviewJourney.actions?.[ctRevisitSection]?.person_2_response || ""}
+                  onChangePerson1={() => {}} onChangePerson2={() => {}} onComplete={() => {}}
+                  onBack={() => setCtRevisitSection(null)} saving={false} readOnly />
+              )
             ) : (
               <CouplesTherapyProgressTab dm={dm} colors={colors} activeJourney={ctActiveJourney} completedJourneys={ctCompletedJourneys}
                 viewingJourney={ctReviewJourney}
                 onContinue={() => { setTab("couplesTherapy"); setCtReviewSection(null); setCtView("overview"); }}
                 onBeginNew={handleBeginCouplesTherapy}
                 onViewJourney={(j) => setCtReviewJourney(j)}
-                onBackFromReview={() => setCtReviewJourney(null)} />
+                onBackFromReview={() => { setCtReviewJourney(null); setCtRevisitSection(null); }}
+                onSelectSection={(n) => { setCtRevisitStep("question"); setCtRevisitQuestionIndex(0); setCtRevisitSection(n); }} />
             )}
           </div>
         )}
