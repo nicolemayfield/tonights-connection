@@ -2983,7 +2983,7 @@ function buildMonthlyReminderIcs(dayOfMonth, timeHHMM) {
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:tc-monthly-checkin-${Date.now()}@tonightsconnection.com`,
+    `UID:tc-monthly-checkin-${localStamp(start)}@tonightsconnection.com`,
     `DTSTAMP:${stamp}`,
     `DTSTART:${localStamp(start)}`,
     `DTEND:${localStamp(end)}`,
@@ -3029,22 +3029,29 @@ function isAppleMobileDevice() {
   } catch { return false; }
 }
 
+// iPhone / iPad Safari can't open a calendar file that only exists inside the page (blob: links show a blank page),
+// so on Apple mobile devices the file comes from a normal https address (/api/monthly-reminder). Safari opens it
+// with the "Add to Calendar" prompt. The address only contains the chosen start time; nothing is stored.
+function monthlyReminderFileUrl(dayOfMonth, timeHHMM) {
+  const start = localStamp(nextReminderStart(dayOfMonth, timeHHMM));
+  return `${window.location.origin}/api/monthly-reminder?start=${start}`;
+}
+
 function downloadMonthlyReminderIcs(dayOfMonth, timeHHMM) {
-  const blob = new Blob([buildMonthlyReminderIcs(dayOfMonth, timeHHMM)], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
   if (isAppleMobileDevice()) {
-    // iPhone / iPad Safari: opening the calendar file in a new tab offers "Add to Calendar"
-    // and leaves the app open behind it.
+    const url = monthlyReminderFileUrl(dayOfMonth, timeHHMM);
     const w = window.open(url, "_blank");
     if (!w) window.location.href = url;
-  } else {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Tonights-Connection-Monthly-Check-In.ics";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    return;
   }
+  const blob = new Blob([buildMonthlyReminderIcs(dayOfMonth, timeHHMM)], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Tonights-Connection-Monthly-Check-In.ics";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
@@ -3591,21 +3598,28 @@ function CouplesTherapyActionScreen({ dm, colors, section, person1Response, pers
 }
 
 // ─── COUPLES THERAPY PART 2 COMPONENTS ─────────────────────────────────────────
-function CouplesTherapyPart2Transition({ dm, colors, onContinue, saving }) {
-  const [day, setDay] = useState(Math.min(new Date().getDate(), 28));
-  const [time, setTime] = useState("19:00");
-  const [reminderTapped, setReminderTapped] = useState(false);
+function CouplesTherapyPart2Transition({ dm, colors, onContinue, saving, userId }) {
+  // iPhone can reload the page while the calendar sheet is open, so the reminder step is remembered on this device.
+  const reminderKey = `tc_part2_reminder_${userId || "user"}`;
+  const rememberedReminder = (() => { try { return JSON.parse(localStorage.getItem(reminderKey) || "null"); } catch { return null; } })();
+  const [day, setDay] = useState(rememberedReminder?.day || Math.min(new Date().getDate(), 28));
+  const [time, setTime] = useState(rememberedReminder?.time || "19:00");
+  const [reminderTapped, setReminderTapped] = useState(!!rememberedReminder);
+  const markReminderTapped = () => {
+    setReminderTapped(true);
+    try { localStorage.setItem(reminderKey, JSON.stringify({ day, time })); } catch {}
+  };
   const android = isAndroidDevice();
   const bodyStyle = { margin: "0 0 14px 0", color: colors.subColor, fontSize: "13px", lineHeight: "1.75", fontFamily: "'DM Sans', sans-serif" };
   const labelStyle = { display: "block", marginBottom: "6px", fontFamily: "'DM Sans', sans-serif", fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase", color: "#b8862a" };
-  const fieldStyle = { width: "100%", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", color: colors.questionText, fontFamily: "'DM Sans', sans-serif", fontSize: "14px", padding: "10px 12px", outline: "none", boxSizing: "border-box" };
+  const fieldStyle = { width: "100%", borderRadius: "10px", border: `1px solid ${dm ? "rgba(245,230,200,0.18)" : "rgba(139,90,43,0.25)"}`, background: dm ? "rgba(245,230,200,0.04)" : "#fdfcfa", color: colors.questionText, fontFamily: "'DM Sans', sans-serif", fontSize: "14px", padding: "10px 12px", outline: "none", boxSizing: "border-box", minWidth: 0, maxWidth: "100%", height: "46px", display: "block" };
   const goldButton = { width: "100%", background: "linear-gradient(135deg, #b8862a, #d4a84e)", border: "none", borderRadius: "12px", color: "#fff", cursor: "pointer", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", fontWeight: "700", letterSpacing: "0.04em", padding: "14px", textTransform: "uppercase", boxShadow: "0 4px 18px rgba(184,134,42,0.35)" };
 
-  const handleSetReminder = () => { openMonthlyReminder(day, time); setReminderTapped(true); };
+  const handleSetReminder = () => { openMonthlyReminder(day, time); markReminderTapped(); };
   const handleAlternate = () => {
     if (android) downloadMonthlyReminderIcs(day, time);
     else window.open(buildGoogleCalendarUrl(day, time), "_blank", "noopener");
-    setReminderTapped(true);
+    markReminderTapped();
   };
 
   return (
@@ -3631,15 +3645,15 @@ function CouplesTherapyPart2Transition({ dm, colors, onContinue, saving }) {
         <p style={bodyStyle}>Before you begin Part 2, set a recurring calendar reminder so you don't forget to come back each month.</p>
         <p style={bodyStyle}>Choose a day and time that works for both of you. Your reminder will repeat once a month for the next 12 months.</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", margin: "0 0 16px 0" }}>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <label htmlFor="tc-reminder-day" style={labelStyle}>Day of the month</label>
             <select id="tc-reminder-day" value={day} onChange={(e) => setDay(parseInt(e.target.value, 10))} style={fieldStyle}>
               {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => <option key={d} value={d}>{ordinalDay(d)}</option>)}
             </select>
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <label htmlFor="tc-reminder-time" style={labelStyle}>Time</label>
-            <input id="tc-reminder-time" type="time" value={time} onChange={(e) => setTime(e.target.value || "19:00")} style={fieldStyle} />
+            <input id="tc-reminder-time" className="tc-time-input" type="time" value={time} onChange={(e) => setTime(e.target.value || "19:00")} style={fieldStyle} />
           </div>
         </div>
         <button onClick={handleSetReminder} style={goldButton}>Set My Monthly Reminder</button>
@@ -4191,6 +4205,7 @@ export default function App() {
     }).select().single();
     setCtPart2Saving(false);
     if (!error && data) {
+      try { localStorage.removeItem(`tc_part2_reminder_${session.user.id}`); } catch {}
       setCtPart2(data);
       setCtPart2View("overview");
       setCtPart2Month(null);
@@ -4426,6 +4441,8 @@ export default function App() {
         ::-webkit-scrollbar-thumb { background: rgba(184,134,42,0.3); border-radius: 4px; }
         .tc-response::placeholder { color: #b0a894; opacity: 1; }
         .tc-response-dm::placeholder { color: #7a7060; opacity: 1; }
+        .tc-time-input { -webkit-appearance: none; appearance: none; }
+        .tc-time-input::-webkit-date-and-time-value { text-align: left; }
         html, body { overscroll-behavior: none; overscroll-behavior-x: none; overscroll-behavior-y: none; -webkit-overflow-scrolling: touch; height: 100%; touch-action: pan-y; }
       `}</style>
 
@@ -4704,7 +4721,7 @@ export default function App() {
                 beginLabel={!ctActiveJourney && ctCompletedJourneys.length > 0 ? "Back to Part 2" : "Begin Couples Therapy"} />
             ) : ctShowPart2 ? (
               !ctPart2 ? (
-                <CouplesTherapyPart2Transition dm={dm} colors={colors} onContinue={handleBeginPart2} saving={ctPart2Saving} />
+                <CouplesTherapyPart2Transition dm={dm} colors={colors} onContinue={handleBeginPart2} saving={ctPart2Saving} userId={session?.user?.id} />
               ) : ctPart2View === "overview" || !ctPart2Month ? (
                 <CouplesTherapyPart2Overview dm={dm} colors={colors} part2={ctPart2} onSelectMonth={ctPart2SelectMonth} onShowOnboarding={() => setCtShowOnboarding(true)} />
               ) : (
